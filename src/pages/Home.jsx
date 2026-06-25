@@ -1,16 +1,12 @@
 import styled from "styled-components";
 import SideBar from "../layout/SideBar";
-import Filter from "../components/Filter";
-import AddButton from "../components/AddButton";
-import Card from "../components/Card";
+import InvoiceHeader from "../components/InvoiceHeader";
 
 export default function Home() {
   return (
     <>
       <Main>
-        <Filter/>
-        <AddButton/>
-        <Card/>
+        <InvoiceHeader/>
       </Main>
       <SideBar />
     </>
