@@ -7,7 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 src/components/Filter.jsx
-src/components/AddButton.jsx
+
 node_modules
 dist
 dist-ssr
