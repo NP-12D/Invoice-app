@@ -1,12 +1,14 @@
 import styled from "styled-components";
 import SideBar from "../layout/SideBar";
 import Filter from "../components/Filter";
+import AddButton from "../components/AddButton";
 
 export default function Home() {
   return (
     <>
       <Main>
         <Filter/>
+        <AddButton/>
       </Main>
       <SideBar />
     </>
