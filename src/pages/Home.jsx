@@ -2,6 +2,7 @@ import styled from "styled-components";
 import SideBar from "../layout/SideBar";
 import Filter from "../components/Filter";
 import AddButton from "../components/AddButton";
+import Card from "../components/Card";
 
 export default function Home() {
   return (
@@ -9,6 +10,7 @@ export default function Home() {
       <Main>
         <Filter/>
         <AddButton/>
+        <Card/>
       </Main>
       <SideBar />
     </>
