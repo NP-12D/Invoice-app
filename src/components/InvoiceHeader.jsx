@@ -2,13 +2,13 @@ import styled from "styled-components";
 import Filter from "./Filter";
 import AddButton from "./AddButton";
 
-export default function InvoiceHeader({ count = 0, onAddClick }) {
+export default function InvoiceHeader({ onAddClick, invoicesCount, activeFilters, onFilterChange }) {
   const renderSubtitle = () => {
-    if (count === 0) return "No invoices";
+    if (invoicesCount === 0) return "No invoices";
     return (
       <>
         <span className="hide-mobile">There are </span>
-        {count} 
+        {invoicesCount} 
         <span className="hide-mobile"> total</span> invoices
       </>
     );
@@ -22,8 +22,11 @@ export default function InvoiceHeader({ count = 0, onAddClick }) {
       </LeftSection>
 
       <RightSection>
-        <Filter />
-        <AddButton onClick={onAddClick} />
+        <Filter 
+          activeFilters={activeFilters} 
+          onFilterChange={onFilterChange} 
+        />
+       <AddButton onClick={onAddClick} />
       </RightSection>
     </HeaderContainer>
   );

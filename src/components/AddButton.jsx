@@ -3,7 +3,7 @@ import plus from "../assets/icon-plus.svg";
 export default function AddButton({onClick}) {
   return (
     <>
-      <Button onClick={()=>onClick()}>
+      <Button onClick={onClick}>
         <Div>
           <Img src={plus} />
         </Div>

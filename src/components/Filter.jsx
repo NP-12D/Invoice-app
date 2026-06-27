@@ -2,18 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import arrowDown from "../assets/icon-arrow-down.svg";
 import arrowcheck from "../assets/icon-check.svg";
+
 const STATUS_OPTIONS = [
   { id: "draft", label: "Draft" },
   { id: "pending", label: "Pending" },
   { id: "paid", label: "Paid" },
 ];
 
-export default function Filter() {
-  const [selectedStatuses, setSelectedStatuses] = useState({
-    draft: false,
-    pending: true,
-    paid: false,
-  });
+export default function Filter({ activeFilters, onFilterChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -27,13 +23,6 @@ export default function Filter() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleCheckboxChange = (id) => {
-    setSelectedStatuses((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
   return (
     <Wrapper ref={dropdownRef}>
       <FilterButton onClick={() => setIsOpen(!isOpen)}>
@@ -43,25 +32,29 @@ export default function Filter() {
 
       {isOpen && (
         <Dropdown>
-          {STATUS_OPTIONS.map((status) => (
-            <CheckboxLabel key={status.id}>
-              <HiddenCheckbox
-                type="checkbox"
-                checked={selectedStatuses[status.id]}
-                onChange={() => handleCheckboxChange(status.id)}
-              />
-
-              <Checkmark checked={selectedStatuses[status.id]}>
-                <img src={arrowcheck} alt="check" />
-              </Checkmark>
-              {status.label}
-            </CheckboxLabel>
-          ))}
+          {STATUS_OPTIONS.map((status) => {
+            const isChecked = activeFilters.includes(status.id);
+            return (
+              <CheckboxLabel key={status.id}>
+                <HiddenCheckbox
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => onFilterChange(status.id)}
+                />
+                <Checkmark checked={isChecked}>
+                  <img src={arrowcheck} alt="check" />
+                </Checkmark>
+                {status.label}
+              </CheckboxLabel>
+            );
+          })}
         </Dropdown>
       )}
     </Wrapper>
   );
 }
+
+/* Styled Components (unchanged) */
 const Wrapper = styled.div`
   position: relative;
   display: inline-block;
@@ -88,7 +81,6 @@ const Dropdown = styled.div`
   position: absolute;
   width: 192px;
   height: 128px;
-
   top: 100%;
   right: 0;
   margin-top: 8px;
@@ -96,7 +88,6 @@ const Dropdown = styled.div`
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
-  width: 192px;
   z-index: 100;
 `;
 
@@ -132,9 +123,8 @@ const Checkmark = styled.span`
   justify-content: center;
 
   img {
-    width: 7.469947814941406px;
-    height: 5.345695495605469px;
-
+    width: 7.5px;
+    height: 5.3px;
     display: ${({ checked }) => (checked ? "flex" : "none")};
   }
 `;

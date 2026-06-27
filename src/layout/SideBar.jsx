@@ -22,7 +22,7 @@ const Bar = styled.div`
   position: absolute;
   left: 0;
   top: 0;
-  z-index: 99;
+  z-index: 99999;
   width: 103px;
   height: 100%;
   background-color: #373b53;

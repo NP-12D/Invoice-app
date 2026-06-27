@@ -4,9 +4,12 @@ import InvoiceHeader from "../components/InvoiceHeader";
 import { useState, useEffect } from "react";
 import Card from "../components/Card";
 import axios from "axios";
+import InvoiceForm from "../components/InvoiceForm";
 
 export default function Home() {
   const [data, setData] = useState([]);
+  const [isFormOpen, setIsFormOpen] = useState(false); // ფორმის ღია/დახურვის სთეითი
+  const [activeFilters, setActiveFilters] = useState([]); // ფილტრების მასივი: ['draft', 'pending', 'paid']
 
   useEffect(() => {
     async function getData() {
@@ -20,12 +23,30 @@ export default function Home() {
     getData();
   }, []);
 
+  const handleFilterChange = (status) => {
+    setActiveFilters((prev) =>
+      prev.includes(status)
+        ? prev.filter((s) => s !== status) // თუ უკვე იყო, ვაშორებთ
+        : [...prev, status] // თუ არ იყო, ვამატებთ
+    );
+  };
+
+  const filteredInvoices = activeFilters.length === 0
+    ? data
+    : data.filter((invoice) => activeFilters.includes(invoice.status.toLowerCase()));
   return (
     <>
+     <InvoiceForm isOpen={isFormOpen} 
+        onClose={() => setIsFormOpen(false)}/>
       <Main>
-        <InvoiceHeader count={data.length} />
+       <InvoiceHeader 
+          onAddClick={() => setIsFormOpen(true)} 
+          invoicesCount={filteredInvoices.length}
+          activeFilters={activeFilters}
+          onFilterChange={handleFilterChange}
+        />
         <Container>
-          {data.map((item) => (
+          {filteredInvoices.map((item) => (
             <Card item={item} key={item.id} />
           ))}
         </Container>
