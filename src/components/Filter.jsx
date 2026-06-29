@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import arrowDown from "../assets/icon-arrow-down.svg";
 import arrowcheck from "../assets/icon-check.svg";
+import { useRecoilState } from "recoil";
+import { filtersState } from "../utilis/invoicesAtom";
 
 const STATUS_OPTIONS = [
   { id: "draft", label: "Draft" },
@@ -9,9 +11,10 @@ const STATUS_OPTIONS = [
   { id: "paid", label: "Paid" },
 ];
 
-export default function Filter({ activeFilters, onFilterChange }) {
+export default function Filter() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [activeFilters, setActiveFilters] = useRecoilState(filtersState);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -22,6 +25,14 @@ export default function Filter({ activeFilters, onFilterChange }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleFilterChange = (status) => {
+    setActiveFilters((prev) =>
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status]
+    );
+  };
 
   return (
     <Wrapper ref={dropdownRef}>
@@ -39,7 +50,7 @@ export default function Filter({ activeFilters, onFilterChange }) {
                 <HiddenCheckbox
                   type="checkbox"
                   checked={isChecked}
-                  onChange={() => onFilterChange(status.id)}
+                  onChange={() => handleFilterChange(status.id)}
                 />
                 <Checkmark checked={isChecked}>
                   <img src={arrowcheck} alt="check" />
@@ -54,7 +65,6 @@ export default function Filter({ activeFilters, onFilterChange }) {
   );
 }
 
-/* Styled Components (unchanged) */
 const Wrapper = styled.div`
   position: relative;
   display: inline-block;

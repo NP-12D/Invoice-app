@@ -394,6 +394,17 @@ const FormBody = styled.div`
   @media (min-width: 768px) {
     padding: 56px 56px 32px;
   }
+  &::-webkit-scrollbar {
+    width: 8px;
+    height:100px;
+    
+    position:absolute;
+    right:20px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: ${({ theme }) => theme.secondaryHover};
+    border-radius: 4px;
+  }
 `;
 
 const Title = styled.h2`
@@ -426,7 +437,7 @@ const FieldGroup = styled.div`
 const FieldLabel = styled.label`
   font-size: 13px;
   font-weight: 500;
-    color: ${({ theme }) => theme.secondaryText};
+  color: ${({ theme }) => theme.secondaryText};
   letter-spacing: -0.1px;
 `;
 
@@ -501,7 +512,6 @@ const ItemListTitle = styled.h3`
   color: ${({ theme }) => theme.secondaryText};
   margin-bottom: 24px;
 `;
- 
 
 const ItemHeaders = styled.div`
   display: flex;
@@ -597,11 +607,13 @@ const DeleteBtn = styled.button`
 const AddItemBtn = styled.button`
   width: 100%;
   height: 48px;
-   background-color: ${({ theme }) => theme.secondaryBg};
+  background-color: ${({ theme }) => theme.secondaryBg};
   border: none;
   border-radius: 24px;
-    color: ${({ theme }) => theme.secondaryText};
-  &:hover { background-color: ${({ theme }) => theme.secondaryHover}; }
+  color: ${({ theme }) => theme.secondaryText};
+  &:hover {
+    background-color: ${({ theme }) => theme.secondaryHover};
+  }
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
@@ -616,8 +628,8 @@ const AddItemBtn = styled.button`
 
 const Footer = styled.div`
   height: 110px;
-   background-color: ${({ theme }) => theme.background};
-  
+  background-color: ${({ theme }) => theme.background};
+
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   padding: 0 24px;
   display: flex;
@@ -638,8 +650,8 @@ const FooterRight = styled.div`
 const CancelBtn = styled.button`
   height: 48px;
   padding: 0 24px;
- background-color: ${({ theme }) => theme.secondaryBg};
-   color: ${({ theme }) => theme.secondaryText};
+  background-color: ${({ theme }) => theme.secondaryBg};
+  color: ${({ theme }) => theme.secondaryText};
   border: none;
   border-radius: 24px;
   font-weight: 700;
@@ -648,8 +660,9 @@ const CancelBtn = styled.button`
   font-family: inherit;
   transition: all 0.2s ease;
 
-  
-   &:hover { background-color: ${({ theme }) => theme.secondaryHover}; }
+  &:hover {
+    background-color: ${({ theme }) => theme.secondaryHover};
+  }
 `;
 
 const DraftBtn = styled.button`

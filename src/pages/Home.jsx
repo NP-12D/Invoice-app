@@ -5,12 +5,14 @@ import { useState, useEffect } from "react";
 import Card from "../components/Card";
 import axios from "axios";
 import InvoiceForm from "../components/InvoiceForm";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { invoicesState, filteredInvoicesState } from "../utilis/invoicesAtom";
 
 export default function Home() {
-  const [data, setData] = useState([]);
-  const [isFormOpen, setIsFormOpen] = useState(false); // ფორმის ღია/დახურვის სთეითი
-  const [activeFilters, setActiveFilters] = useState([]); // ფილტრების მასივი: ['draft', 'pending', 'paid']
-
+  const [data, setData] = useRecoilState(invoicesState);
+  const filteredInvoices = useRecoilValue(filteredInvoicesState);
+  const [isFormOpen, setIsFormOpen] = useState(false); 
+console.log(data)
   useEffect(() => {
     async function getData() {
       try {
@@ -21,29 +23,15 @@ export default function Home() {
       }
     }
     getData();
-  }, []);
+  }, [setData]);
 
-  const handleFilterChange = (status) => {
-    setActiveFilters((prev) =>
-      prev.includes(status)
-        ? prev.filter((s) => s !== status) // თუ უკვე იყო, ვაშორებთ
-        : [...prev, status] // თუ არ იყო, ვამატებთ
-    );
-  };
-
-  const filteredInvoices = activeFilters.length === 0
-    ? data
-    : data.filter((invoice) => activeFilters.includes(invoice.status.toLowerCase()));
   return (
     <>
-     <InvoiceForm isOpen={isFormOpen} 
-        onClose={() => setIsFormOpen(false)}/>
+      <InvoiceForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
       <Main>
-       <InvoiceHeader 
-          onAddClick={() => setIsFormOpen(true)} 
+        <InvoiceHeader
+          onAddClick={() => setIsFormOpen(true)}
           invoicesCount={filteredInvoices.length}
-          activeFilters={activeFilters}
-          onFilterChange={handleFilterChange}
         />
         <Container>
           {filteredInvoices.map((item) => (

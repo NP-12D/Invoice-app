@@ -5,6 +5,7 @@ import { useRecoilValue } from "recoil";
 import Home from "./pages/Home";
 import { themeAtom } from "./utilis/themeAtom";
 import { lightTheme, darkTheme } from "./utilis/Themes";
+import InvoiceView from "./components/InvoiceView";
 
 function App() {
   console.log(themeAtom);
@@ -15,6 +16,7 @@ function App() {
     <ThemeProvider theme={theme === "light" ? lightTheme : darkTheme}>
       <Routes>
         <Route path="/" element={<Home />} />
+         <Route path="/invoice/:id" element={<InvoiceView />} />
       </Routes>
     </ThemeProvider>
   );

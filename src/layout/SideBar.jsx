@@ -24,7 +24,7 @@ const Bar = styled.div`
   top: 0;
   z-index: 99999;
   width: 103px;
-  height: 100%;
+  min-height: 100%;
   background-color: #373b53;
   border-top-right-radius: 20px;
   border-bottom-right-radius: 20px;
