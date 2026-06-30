@@ -1,74 +1,142 @@
 import styled from "styled-components";
 import SideBar from "../layout/SideBar";
 import InvoiceHeader from "../components/InvoiceHeader";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Card from "../components/Card";
-import axios from "axios";
-import InvoiceForm from "../components/InvoiceForm";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { invoicesState, filteredInvoicesState } from "../utilis/invoicesAtom";
+import InvoiceForm from "../components/Form/InvoiceForm";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { filteredInvoicesState, invoicesState } from "../utilis/invoicesAtom"; 
+import empty from "../assets/Email campaign_Flatline 2.png";
 
 export default function Home() {
-  const [data, setData] = useRecoilState(invoicesState);
   const filteredInvoices = useRecoilValue(filteredInvoicesState);
-  const [isFormOpen, setIsFormOpen] = useState(false); 
-console.log(data)
-  useEffect(() => {
-    async function getData() {
-      try {
-        const response = await axios.get("/data.json");
-        setData(response.data);
-      } catch (error) {
-        console.error("Error loading data:", error);
+  const setInvoices = useSetRecoilState(invoicesState); 
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  const handleSaveInvoice = (newInvoice) => {
+    setInvoices((prevInvoices) => {
+      const exists = prevInvoices.some((inv) => inv.id === newInvoice.id);
+      if (exists) {
+        return prevInvoices.map((inv) => (inv.id === newInvoice.id ? newInvoice : inv));
       }
-    }
-    getData();
-  }, [setData]);
+      return [newInvoice, ...prevInvoices];
+    });
+  };
 
   return (
-    <>
-      <InvoiceForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
+    <PageWrapper>
+      <SideBar />
       <Main>
         <InvoiceHeader
           onAddClick={() => setIsFormOpen(true)}
           invoicesCount={filteredInvoices.length}
         />
         <Container>
-          {filteredInvoices.map((item) => (
-            <Card item={item} key={item.id} />
-          ))}
+          {filteredInvoices.length === 0 ? (
+            <Empty>
+              <img src={empty} alt="empty" />
+              <EmptyHeader>There is nothing here</EmptyHeader>
+              <EmptyDis>
+                Create an invoice by clicking the New button and get started
+              </EmptyDis>
+            </Empty>
+          ) : (
+            filteredInvoices.map((item) => <Card item={item} key={item.id} />)
+          )}
         </Container>
       </Main>
-      <SideBar />
-    </>
+      
+      <InvoiceForm
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        invoiceToEdit={null} 
+        onSave={handleSaveInvoice} 
+      />
+    </PageWrapper>
   );
 }
 
+const PageWrapper = styled.div`
+  width: 100%;
+  min-height: 100vh;
+  background-color: ${({ theme }) => theme.background};
+  display: flex;
+  flex-direction: column;
+`;
+
 const Main = styled.main`
   width: 100%;
-  height: 100vh;
-  background-color: ${({ theme }) => theme.background};
-  color: ${({ theme }) => theme.text};
-  padding-left: 120px;
-  padding-top: 80px;
+  max-width: 730px;
+  margin: 0 auto;
+  padding-left: 103px;
+  padding-top: 72px;
+  padding-bottom: 48px;
   display: flex;
-  align-items: center;
-  justify-content: center;
   flex-direction: column;
   gap: 65px;
+  box-sizing: border-box;
+
+  @media (min-width: 1025px) {
+    max-width: calc(730px + 103px);
+  }
+
+  @media (max-width: 1024px) {
+    padding-left: 48px;
+    padding-right: 48px;
+    padding-top: 136px;
+    gap: 56px;
+  }
+
+  @media (max-width: 650px) {
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-top: 104px;
+    gap: 32px;
+  }
 `;
 
 const Container = styled.div`
-  width: 730px;
-  height: 600px;
-  overflow: scroll;
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  scrollbar-width: none;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  /* align-items: center; */
-  /* justify-content: center; */
   gap: 16px;
+`;
+
+const Empty = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: 40px;
+
+  img {
+    margin-bottom: 64px;
+    width: 242px;
+    height: 200px;
+    object-fit: contain;
+
+    @media (max-width: 650px) {
+      margin-bottom: 40px;
+    }
+  }
+`;
+
+const EmptyHeader = styled.h2`
+  font-size: 20px;
+  line-height: 22px;
+  letter-spacing: -0.63px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.text};
+  margin: 0 0 16px 0;
+`;
+
+const EmptyDis = styled.p`
+  font-size: 12px;
+  line-height: 15px;
+  letter-spacing: -0.25px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.secondaryText};
+  max-width: 220px;
+  margin: 0;
 `;

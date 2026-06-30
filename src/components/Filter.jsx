@@ -37,7 +37,7 @@ export default function Filter() {
   return (
     <Wrapper ref={dropdownRef}>
       <FilterButton onClick={() => setIsOpen(!isOpen)}>
-        Filter by status
+        Filter <span className="hide-mobile">by status</span>
         <Chevron src={arrowDown} $open={isOpen} />
       </FilterButton>
 
@@ -80,6 +80,13 @@ const FilterButton = styled.button`
   display: flex;
   align-items: center;
   gap: 6px;
+  @media (max-width: 600px) {
+    gap: 12px;
+    
+    .hide-mobile {
+      display: none; 
+    }
+  }
 `;
 
 const Chevron = styled.img`
@@ -93,12 +100,16 @@ const Dropdown = styled.div`
   height: 128px;
   top: 100%;
   right: 0;
-  margin-top: 8px;
+  margin-top: 20px;
   background: ${({ theme }) => theme.secondaryBg};
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
   z-index: 100;
+ 
+  @media (max-width: 600px) {
+     transform: translateX(50%);
+  }
 `;
 
 const HiddenCheckbox = styled.input`

@@ -10,7 +10,7 @@ export default function Status({ status = "draft" }) {
         return { text: "Pending", bg: "rgba(255, 143, 0, 0.06)", color: "#FF8F00" };
       case "draft":
       default:
-        return { text: "Draft", bg: "rgba(223, 227, 251, 0.06)", color: "#DFE3FB" };
+        return { text: "Draft", bg: "rgba(55, 59, 83, 0.06)", color: "#373B53" };
     }
   };
 

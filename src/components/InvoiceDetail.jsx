@@ -2,15 +2,18 @@ import styled from "styled-components";
 import InvoiceViewHeader from "./InvoiceViewHeader";
 import { useState } from "react";
 import DeleteModal from "./DeleteModal";
+import InvoiceForm from "./Form/InvoiceForm";
+import { Link } from "react-router-dom";
 
 export default function InvoiceDetail({
   invoice,
-  onEdit,
+  onSaveEdit,
   onDelete,
   onMarkAsPaid,
-  onBack,
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
@@ -25,25 +28,25 @@ export default function InvoiceDetail({
 
   return (
     <Wrapper>
-      <div>
-        <GoBackButton
-          onClick={onBack || (() => console.log("Go back clicked"))}
-        >
-          <ArrowIcon width="7" height="10" viewBox="0 0 7 10" fill="none">
-            <path
-              d="M1 1l4 4-4 4"
-              stroke="#7C5DFA"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </ArrowIcon>
-          <span>Go back</span>
-        </GoBackButton>
+      <InnerContainer>
+        <Link to="/">
+          <GoBackButton>
+            <ArrowIcon width="7" height="10" viewBox="0 0 7 10" fill="none">
+              <path
+                d="M1 1l4 4-4 4"
+                stroke="#7C5DFA"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </ArrowIcon>
+            <span>Go back</span>
+          </GoBackButton>
+        </Link>
 
         <InvoiceViewHeader
           status={invoice.status}
-          onEdit={onEdit}
+          onEdit={() => setIsFormOpen(true)}
           onDelete={() => setIsModalOpen(true)}
           onMarkAsPaid={() => onMarkAsPaid(invoice.id)}
         />
@@ -56,14 +59,14 @@ export default function InvoiceDetail({
                 {invoice.id}
               </h2>
               <ProjectDesc>
-                {invoice.projectDescription || "No Description"}
+                {invoice.description || "No Description"}
               </ProjectDesc>
             </InvoiceIdBox>
             <SenderAddress>
-              <span>{invoice.senderStreet || "19 Union Terrace"}</span>
-              <span>{invoice.senderCity || "London"}</span>
-              <span>{invoice.senderPostCode || "E1 3EZ"}</span>
-              <span>{invoice.senderCountry || "United Kingdom"}</span>
+              <span>{invoice.senderAddress?.street || "19 Union Terrace"}</span>
+              <span>{invoice.senderAddress?.city || "London"}</span>
+              <span>{invoice.senderAddress?.postCode || "E1 3EZ"}</span>
+              <span>{invoice.senderAddress?.country || "United Kingdom"}</span>
             </SenderAddress>
           </CardTopRow>
 
@@ -83,10 +86,14 @@ export default function InvoiceDetail({
               <InfoLabel>Bill To</InfoLabel>
               <InfoValue>{invoice.clientName}</InfoValue>
               <AddressBlock>
-                <span>{invoice.clientStreet || "106 Kendell Street"}</span>
-                <span>{invoice.clientCity || "Sharrington"}</span>
-                <span>{invoice.clientPostCode || "NR24 5WQ"}</span>
-                <span>{invoice.clientCountry || "United Kingdom"}</span>
+                <span>
+                  {invoice.clientAddress?.street || "106 Kendell Street"}
+                </span>
+                <span>{invoice.clientAddress?.city || "Sharrington"}</span>
+                <span>{invoice.clientAddress?.postCode || "NR24 5WQ"}</span>
+                <span>
+                  {invoice.clientAddress?.country || "United Kingdom"}
+                </span>
               </AddressBlock>
             </InfoCol>
 
@@ -105,15 +112,15 @@ export default function InvoiceDetail({
                 <ColTotal>Total</ColTotal>
               </TableHeader>
 
-              {(invoice.items || []).map((item) => (
-                <TableRow key={item.id}>
+              {(invoice.items || []).map((item, index) => (
+                <TableRow key={index}>
                   <ColName>
                     <span>{item.name}</span>
                     <MobileItemMeta>
-                      {item.qty} x £{Number(item.price).toFixed(2)}
+                      {item.quantity} x £{Number(item.price).toFixed(2)}
                     </MobileItemMeta>
                   </ColName>
-                  <ColQty>{item.qty}</ColQty>
+                  <ColQty>{item.quantity}</ColQty>
                   <ColPrice>£{Number(item.price).toFixed(2)}</ColPrice>
                   <ColTotal>£{Number(item.total).toFixed(2)}</ColTotal>
                 </TableRow>
@@ -128,7 +135,17 @@ export default function InvoiceDetail({
             </TableFooterBanner>
           </PricingTableContainer>
         </DetailCard>
-      </div>
+      </InnerContainer>
+      <InvoiceForm
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        invoiceToEdit={invoice}
+        onSave={(updatedInvoice) => {
+          if (onSaveEdit) onSaveEdit(updatedInvoice);
+          setIsFormOpen(false);
+        }}
+      />
+    
       <DeleteModal
         isOpen={isModalOpen}
         invoiceId={invoice.id}
@@ -145,19 +162,28 @@ export default function InvoiceDetail({
 const Wrapper = styled.div`
   width: 100%;
   display: flex;
-  align-items: center;
   justify-content: center;
-  margin: 0 auto;
-  padding: 48px 24px;
-  box-sizing: border-box;
   background-color: ${({ theme }) => theme.background};
   min-height: 100vh;
   transition: background-color 0.3s ease;
-  padding-top: 64px;
+  box-sizing: border-box;
+
+  padding: 72px 24px 120px 103px;
+
+  @media (max-width: 1024px) {
+    padding: 120px 48px 120px 48px;
+  }
 
   @media (max-width: 650px) {
-    padding: 32px 16px;
+    padding: 104px 24px 160px 24px;
   }
+`;
+
+const InnerContainer = styled.div`
+  width: 100%;
+  max-width: 730px;
+  display: flex;
+  flex-direction: column;
 `;
 
 const GoBackButton = styled.button`
@@ -172,6 +198,7 @@ const GoBackButton = styled.button`
   gap: 24px;
   margin-bottom: 32px;
   padding: 0;
+  align-self: flex-start;
 
   span {
     transition: color 0.2s ease;
@@ -187,7 +214,7 @@ const ArrowIcon = styled.svg`
 `;
 
 const DetailCard = styled.div`
-  width: 730px;
+  width: 100%;
   background-color: ${({ theme }) => theme.card};
   border-radius: 8px;
   padding: 48px;
@@ -198,6 +225,7 @@ const DetailCard = styled.div`
 
   @media (max-width: 650px) {
     padding: 24px;
+    margin-top: 16px;
   }
 `;
 
@@ -210,6 +238,7 @@ const CardTopRow = styled.div`
   @media (max-width: 650px) {
     flex-direction: column;
     gap: 30px;
+    margin-bottom: 30px;
   }
 `;
 
@@ -224,6 +253,11 @@ const InvoiceIdBox = styled.div`
     span {
       color: ${({ theme }) => theme.secondaryText};
     }
+
+    @media (max-width: 650px) {
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
   }
 `;
 
@@ -231,6 +265,10 @@ const ProjectDesc = styled.p`
   font-size: 15px;
   color: ${({ theme }) => theme.secondaryText};
   margin: 0;
+
+  @media (max-width: 650px) {
+    font-size: 13px;
+  }
 `;
 
 const SenderAddress = styled.div`
@@ -241,6 +279,7 @@ const SenderAddress = styled.div`
   font-size: 13px;
   line-height: 1.5;
   color: ${({ theme }) => theme.secondaryText};
+  letter-spacing: -0.1px;
 
   @media (max-width: 650px) {
     align-items: flex-start;
@@ -256,7 +295,8 @@ const CardMiddleGrid = styled.div`
 
   @media (max-width: 650px) {
     grid-template-columns: 1fr 1fr;
-    gap: 32px 16px;
+    gap: 32px 20px;
+    margin-bottom: 40px;
 
     & > div:last-child {
       grid-column: span 2;
@@ -281,6 +321,11 @@ const InfoValue = styled.div`
   font-weight: 700;
   color: ${({ theme }) => theme.text};
   margin-bottom: 8px;
+  line-height: 20px;
+
+  @media (max-width: 650px) {
+    font-size: 15px;
+  }
 `;
 
 const AddressBlock = styled.div`
@@ -289,6 +334,7 @@ const AddressBlock = styled.div`
   font-size: 13px;
   line-height: 1.5;
   color: ${({ theme }) => theme.secondaryText};
+  letter-spacing: -0.1px;
 `;
 
 const EmailText = styled.div`
@@ -296,6 +342,11 @@ const EmailText = styled.div`
   font-weight: 700;
   color: ${({ theme }) => theme.text};
   word-break: break-all;
+  line-height: 20px;
+
+  @media (max-width: 650px) {
+    font-size: 15px;
+  }
 `;
 
 const PricingTableContainer = styled.div`
@@ -307,6 +358,10 @@ const PricingTableContainer = styled.div`
 
 const TableBodyPadding = styled.div`
   padding: 32px;
+
+  @media (max-width: 650px) {
+    padding: 24px;
+  }
 `;
 
 const TableHeader = styled.div`
@@ -333,6 +388,10 @@ const TableRow = styled.div`
   &:last-child {
     margin-bottom: 0;
   }
+
+  @media (max-width: 650px) {
+    margin-bottom: 24px;
+  }
 `;
 
 const MobileItemMeta = styled.div`
@@ -340,6 +399,7 @@ const MobileItemMeta = styled.div`
   font-size: 13px;
   color: ${({ theme }) => theme.secondaryText};
   margin-top: 8px;
+  font-weight: 700;
 
   @media (max-width: 650px) {
     display: block;
@@ -352,6 +412,7 @@ const ColName = styled.div`
 
   @media (max-width: 650px) {
     flex: 1;
+    font-size: 15px;
   }
 `;
 
@@ -387,8 +448,6 @@ const ColTotal = styled.span`
 `;
 
 const TableFooterBanner = styled.div`
-  /* დიზაინის მიხედვით, Light თემაზეც კი ეს ბანერი ხშირად ძალიან მუქია (Figma-ში #373B53 ან სრულიად შავი #0C0E16)
-     თუ Light თემაზე უფრო ღია გინდათ, შეგიძლიათ დაწეროთ: theme.text ან დატოვოთ მყარი ფერი */
   background-color: ${({ theme }) =>
     theme.text === "#0C0E16" ? "#373B53" : "#0C0E16"};
   padding: 32px;
@@ -398,6 +457,10 @@ const TableFooterBanner = styled.div`
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   transition: background-color 0.3s ease;
+
+  @media (max-width: 650px) {
+    padding: 24px;
+  }
 `;
 
 const FooterBannerLabel = styled.span`
@@ -411,4 +474,8 @@ const FooterBannerValue = styled.span`
   font-weight: 700;
   color: #ffffff;
   letter-spacing: -0.5px;
+
+  @media (max-width: 650px) {
+    font-size: 20px;
+  }
 `;

@@ -24,33 +24,38 @@ export default function Card({ item }) {
   };
 
   return (
-    <Link to={`/invoice/${item.id}`}>
+    <StyledLink to={`/invoice/${item.id}`}>
       <CardContainer>
-        <LeftSection>
-          <InvoiceId>
-            <span>#</span>
-            {item.id}
-          </InvoiceId>
-          <DueDate>{formatDate(item.paymentDue)}</DueDate>
-          <ClientName>{item.clientName}</ClientName>
-        </LeftSection>
-
-        <RightSection>
-          <TotalAmount>{formatCurrency(item.total)}</TotalAmount>
+        <InvoiceId>
+          <span>#</span>{item.id}
+        </InvoiceId>
+        
+        <DueDate>{formatDate(item.paymentDue)}</DueDate>
+        
+        <ClientName>{item.clientName}</ClientName>
+        
+        <TotalAmount>{formatCurrency(item.total)}</TotalAmount>
+        
+        <StatusWrapper>
           <Status status={item.status} />
-          <ArrowIcon src={arrowRight} />
-        </RightSection>
+        </StatusWrapper>
+
+        <ArrowIcon src={arrowRight} alt="arrow right" />
       </CardContainer>
-    </Link>
+    </StyledLink>
   );
 }
 
+
+const StyledLink = styled(Link)`
+  text-decoration: none;
+  display: block;
+  width: 100%;
+`;
+
 const CardContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   background: ${({ theme }) => theme.card};
-  padding: 28px 32px;
+  padding: 16px 32px;
   border-radius: 8px;
   box-shadow: 0px 10px 10px -10px rgba(72, 84, 159, 0.1);
   border: 1px solid transparent;
@@ -59,43 +64,26 @@ const CardContainer = styled.div`
   width: 100%;
   box-sizing: border-box;
 
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr 1.2fr 1.2fr 1.2fr auto;
+  align-items: center;
+
   &:hover {
     border-color: #7c5dfa;
   }
 
   @media (max-width: 768px) {
     padding: 24px;
+    grid-template-columns: 1fr 1.5fr 1.5fr 1.2fr 1.2fr auto;
   }
 
   @media (max-width: 600px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-`;
-
-const LeftSection = styled.div`
-  display: flex;
-  align-items: center;
-  flex: 1;
-  gap: 40px;
-
-  @media (max-width: 600px) {
-    width: 100%;
-    justify-content: space-between;
-    gap: 20px;
-  }
-`;
-
-const RightSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 20px;
-
-  @media (max-width: 600px) {
-    width: 100%;
-    justify-content: space-between;
-    margin-top: 8px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 
+      "id client"
+      "meta status";
+    gap: 8px;
+    padding: 24px;
   }
 `;
 
@@ -105,10 +93,14 @@ const InvoiceId = styled.h4`
   color: ${({ theme }) => theme.text};
   letter-spacing: -0.25px;
   margin: 0;
-  min-width: 75px;
 
   span {
     color: #7e88c3;
+  }
+
+  @media (max-width: 600px) {
+    grid-area: id;
+    margin-bottom: 16px;
   }
 `;
 
@@ -117,29 +109,51 @@ const DueDate = styled.p`
   font-weight: 500;
   color: #7e88c3;
   margin: 0;
-  min-width: 120px;
+
+  @media (max-width: 600px) {
+    grid-area: meta;
+    align-self: flex-start;
+  }
 `;
 
 const ClientName = styled.p`
   font-size: 13px;
   font-weight: 500;
-  color: #858bb2;
+  color: ${({ theme }) => theme.text === "#0C0E16" ? "#858bb2" : "#FFFFFF"};
   margin: 0;
   text-align: left;
+
+  @media (max-width: 600px) {
+    grid-area: client;
+    text-align: right;
+    align-self: flex-start;
+  }
 `;
 
 const TotalAmount = styled.span`
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  color: #0c0e16;
+  color: ${({ theme }) => theme.text};
   letter-spacing: -0.25px;
-  margin-right: 20px;
   text-align: right;
-  min-width: 90px;
+  padding-right: 20px;
 
   @media (max-width: 600px) {
-    margin-right: 0;
+    grid-area: meta;
     text-align: left;
+    align-self: flex-end;
+    margin-top: 24px; /* თარიღსა და თანხას შორის დაშორება მობილურზე */
+    padding-right: 0;
+  }
+`;
+
+const StatusWrapper = styled.div`
+  display: flex;
+  justify-content: flex-end;
+
+  @media (max-width: 600px) {
+    grid-area: status;
+    align-self: flex-end;
   }
 `;
 

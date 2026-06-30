@@ -7,7 +7,7 @@ export default function AddButton({onClick}) {
         <Div>
           <Img src={plus} />
         </Div>
-        New Invoice
+        <div>New <span className="hide-mobile">Invoice</span></div>
       </Button>
     </>
   );
@@ -15,7 +15,7 @@ export default function AddButton({onClick}) {
 const Button = styled.button`
   font-family: Spartan;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 15px;
   line-height: 15px;
   letter-spacing: -0.25px;
   color: #fff;
@@ -31,6 +31,15 @@ const Button = styled.button`
   border: none;
   &:hover{
     background-color:#9277FF;
+  }
+  @media (max-width: 500px) {
+    width: 92px;
+    gap: 8px;
+    padding-right: 8px;
+
+    .hide-mobile {
+      display: none;
+    }
   }
 `;
 const Div = styled.div`

@@ -31,8 +31,10 @@ const Container = styled.div`
   box-shadow: 0px 10px 10px -10px rgba(72, 84, 159, 0.1);
   transition: background-color 0.3s ease;
 
-  @media (max-width: 600px) {
+  @media (max-width: 650px) {
     padding: 24px;
+    /* On mobile, Container only holds the status bar */
+    justify-content: center; 
   }
 `;
 
@@ -41,7 +43,7 @@ const StatusSection = styled.div`
   align-items: center;
   gap: 16px;
 
-  @media (max-width: 600px) {
+  @media (max-width: 650px) {
     width: 100%;
     justify-content: space-between;
   }
@@ -59,7 +61,17 @@ const ActionsSection = styled.div`
   align-items: center;
   gap: 8px;
 
-  @media (max-width: 600px) {
+  @media (max-width: 650px) {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: ${({ theme }) => theme.card};
+    padding: 22px 24px;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0px -10px 20px rgba(72, 84, 159, 0.05);
+    z-index: 99;
   }
 `;
 
@@ -76,6 +88,12 @@ const ButtonBase = styled.button`
 
   &:active {
     transform: scale(0.98);
+  }
+
+  @media (max-width: 650px) {
+    padding: 0 18px;
+    flex: 1;
+    max-width: 140px;
   }
 `;
 
