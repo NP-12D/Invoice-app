@@ -29,7 +29,8 @@ export default function InvoiceForm({ isOpen, onClose, onSave, invoiceToEdit }) 
           clientAddress: { ...(invoiceToEdit.clientAddress || {}) },
           items: (invoiceToEdit.items || []).map((item, index) => ({
             ...item,
-            id: item.id || `existing-item-${index}`
+            id: item.id || `existing-item-${index}`,
+            quantity: item.quantity || item.qty || 1, 
           }))
         });
       } else {
@@ -58,19 +59,19 @@ export default function InvoiceForm({ isOpen, onClose, onSave, invoiceToEdit }) 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    if (name.includes(".")) {
+    setFormData((prev) => {
+      if (!name.includes(".")) {
+        return { ...prev, [name]: value };
+      }
       const [parentKey, childKey] = name.split(".");
-      
-      setFormData((prev) => ({
+      return {
         ...prev,
         [parentKey]: {
           ...(prev[parentKey] || {}), 
           [childKey]: value,
         },
-      }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+      };
+    });
   };
 
   const handleItemChange = (id, field, value) => {
@@ -81,13 +82,12 @@ export default function InvoiceForm({ isOpen, onClose, onSave, invoiceToEdit }) 
 
         const targetField = field === "qty" ? "quantity" : field;
         
-        let typedValue = value;
-        if (field === "qty") typedValue = parseInt(value, 10) || 0;
-        if (field === "price") typedValue = parseFloat(value) || 0;
+        const updated = { 
+          ...item, 
+          [targetField]: field === "price" ? (parseFloat(value) || 0) : (parseInt(value, 10) || 0)
+        };
 
-        const updated = { ...item, [targetField]: typedValue };
         updated.total = updated.quantity * updated.price;
-        
         return updated;
       }),
     }));
@@ -108,33 +108,34 @@ export default function InvoiceForm({ isOpen, onClose, onSave, invoiceToEdit }) 
     setFormData((prev) => ({ ...prev, items: prev.items.filter((i) => i.id !== id) }));
   };
 
-const handleSubmit = (actionType) => {
-  const total = formData.items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
-  
-  let finalStatus = "pending";
+  const handleSubmit = (actionType) => {
+    const total = formData.items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
+    
+    let finalStatus = "pending";
 
-  if (!invoiceToEdit) {
-    finalStatus = actionType === "draft" ? "draft" : "pending";
-  } else {
-    finalStatus = invoiceToEdit.status === "draft" && actionType === "send" ? "pending" : invoiceToEdit.status;
-  }
+    if (!invoiceToEdit) {
+      finalStatus = actionType === "draft" ? "draft" : "pending";
+    } else {
+      finalStatus = invoiceToEdit.status === "draft" && actionType === "send" ? "pending" : invoiceToEdit.status;
+    }
 
-  const cleanItems = (formData.items || []).map(item => ({
-    ...item,
-    quantity: item.quantity || item.qty || 1,
-    total: (item.quantity || item.qty || 1) * (Number(item.price) || 0)
-  }));
+    const sanitizedItems = formData.items.map(item => ({
+      name: item.name,
+      quantity: Number(item.quantity),
+      price: Number(item.price),
+      total: Number(item.total)
+    }));
 
-  onSave({
-    ...formData,
-    id: invoiceToEdit ? invoiceToEdit.id : `RT${Math.floor(1000 + Math.random() * 9000)}`,
-    status: finalStatus,
-    items: cleanItems,
-    total,
-  });
-  
-  onClose();
-};
+    onSave({
+      ...formData,
+      id: invoiceToEdit ? invoiceToEdit.id : `RT${Math.floor(1000 + Math.random() * 9000)}`,
+      status: finalStatus,
+      items: sanitizedItems,
+      total,
+    });
+    
+    onClose();
+  };
 
   return (
     <Overlay>
@@ -171,7 +172,6 @@ const handleSubmit = (actionType) => {
 
         <FormFooter
           isEditMode={!!invoiceToEdit}
-          currentStatus={invoiceToEdit?.status}
           onClose={onClose}
           onActionClick={handleSubmit} 
         />

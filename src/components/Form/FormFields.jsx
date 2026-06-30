@@ -1,5 +1,13 @@
+import { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import CustomDatePicker from "./CustomDatePicker";
+
+const TERMS_OPTIONS = [
+  { value: "1", label: "Net 1 Day" },
+  { value: "7", label: "Net 7 Days" },
+  { value: "15", label: "Net 15 Days" },
+  { value: "30", label: "Net 30 Days" },
+];
 
 export default function FormFields({ 
   formData, 
@@ -9,6 +17,32 @@ export default function FormFields({
   setShowDatePicker, 
   datePickerRef 
 }) {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close custom select dropdown if user clicks outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const currentTermLabel = TERMS_OPTIONS.find(
+    (opt) => opt.value === String(formData.paymentTerms || "30")
+  )?.label;
+
+  const handleTermSelect = (value) => {
+    // Mimic standard change event shape to stay compatible with handleInputChange
+    handleInputChange({
+      target: { name: "paymentTerms", value },
+    });
+    setShowDropdown(false);
+  };
+
   return (
     <>
       <Section>
@@ -115,20 +149,39 @@ export default function FormFields({
             setShow={setShowDatePicker}
             datePickerRef={datePickerRef}
           />
-          <FieldGroup>
+          
+          <FieldGroup ref={dropdownRef}>
             <FieldLabel>Payment Terms</FieldLabel>
-            <Select 
-              name="paymentTerms" 
-              value={formData.paymentTerms || "30"} 
-              onChange={handleInputChange}
-            >
-              <option value="1">Net 1 Day</option>
-              <option value="7">Net 7 Days</option>
-              <option value="15">Net 15 Days</option>
-              <option value="30">Net 30 Days</option>
-            </Select>
+            <CustomSelectWrapper>
+              <SelectTrigger 
+                type="button" 
+                $isOpen={showDropdown}
+                onClick={() => setShowDropdown(!showDropdown)}
+              >
+                <span>{currentTermLabel}</span>
+                <svg width="11" height="7" viewBox="0 0 11 7" fill="none" className="arrow-icon">
+                  <path d="M1 1l4.22 4.22L9.44 1" stroke="#7C5DFA" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </SelectTrigger>
+
+              {showDropdown && (
+                <DropdownMenu>
+                  {TERMS_OPTIONS.map((option) => (
+                    <DropdownItem 
+                      key={option.value} 
+                      type="button"
+                      $isSelected={String(formData.paymentTerms) === option.value}
+                      onClick={() => handleTermSelect(option.value)}
+                    >
+                      {option.label}
+                    </DropdownItem>
+                  ))}
+                </DropdownMenu>
+              )}
+            </CustomSelectWrapper>
           </FieldGroup>
         </TwoCol>
+        
         <FieldGroup>
           <FieldLabel>Project Description</FieldLabel>
           <Input 
@@ -142,6 +195,8 @@ export default function FormFields({
     </>
   );
 }
+
+// --- Styled Components ---
 
 const Section = styled.div`
   margin-bottom: 40px;
@@ -157,6 +212,7 @@ const SectionLabel = styled.h4`
 `;
 
 const FieldGroup = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -181,7 +237,7 @@ const Input = styled.input`
   width: 100%;
   transition: border-color 0.2s ease;
   font-family: inherit;
-  background-color: ${({ theme }) => theme.card};
+  background-color: ${({ theme }) => theme.inputBg || theme.card};
   border: 1px solid ${({ theme }) => theme.border};
   color: ${({ theme }) => theme.text};
 
@@ -190,19 +246,78 @@ const Input = styled.input`
   }
 `;
 
-const Select = styled.select`
+/* --- Custom Pixel-Perfect Dropdown Selection Layouts --- */
+
+const CustomSelectWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const SelectTrigger = styled.button`
   height: 48px;
-  background-color: ${({ theme }) => theme.card};
-  border: 1px solid ${({ theme }) => theme.border};
+  width: 100%;
+  background-color: ${({ theme }) => theme.inputBg || theme.card};
+  border: 1px solid ${({ $isOpen, theme }) => ($isOpen ? "#7C5DFA" : theme.border)};
   border-radius: 4px;
   padding: 0 20px;
   color: ${({ theme }) => theme.text};
   font-size: 15px;
   font-weight: 700;
-  outline: none;
-  width: 100%;
+  letter-spacing: -0.25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   cursor: pointer;
   font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: #7C5DFA;
+  }
+
+  .arrow-icon {
+    transition: transform 0.2s ease;
+    transform: ${({ $isOpen }) => ($isOpen ? "rotate(180deg)" : "rotate(0deg)")};
+  }
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  background-color: ${({ theme }) => theme.card};
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 8px;
+  box-shadow: 0px 10px 20px rgba(72, 84, 159, 0.25);
+  z-index: 10;
+  overflow: hidden;
+`;
+
+const DropdownItem = styled.button`
+  width: 100%;
+  height: 48px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid ${({ theme }) => theme.border};
+  padding: 0 24px;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.25px;
+  color: ${({ $isSelected, theme }) => ($isSelected ? "#7C5DFA" : theme.text)};
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.2s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    color: #7C5DFA;
+  }
 `;
 
 const ThreeCol = styled.div`

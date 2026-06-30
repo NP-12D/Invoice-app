@@ -5,12 +5,12 @@ import { useState } from "react";
 import Card from "../components/Card";
 import InvoiceForm from "../components/Form/InvoiceForm";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { filteredInvoicesState, invoicesState } from "../utilis/invoicesAtom"; 
+import { filteredInvoicesState, invoicesState } from "../utilis/invoicesAtom";
 import empty from "../assets/Email campaign_Flatline 2.png";
 
 export default function Home() {
   const filteredInvoices = useRecoilValue(filteredInvoicesState);
-  const setInvoices = useSetRecoilState(invoicesState); 
+  const setInvoices = useSetRecoilState(invoicesState);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const handleSaveInvoice = (newInvoice) => {
@@ -49,8 +49,8 @@ export default function Home() {
       <InvoiceForm
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
-        invoiceToEdit={null} 
-        onSave={handleSaveInvoice} 
+        invoiceToEdit={null}
+        onSave={handleSaveInvoice}
       />
     </PageWrapper>
   );

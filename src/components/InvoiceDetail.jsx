@@ -87,12 +87,12 @@ export default function InvoiceDetail({
               <InfoValue>{invoice.clientName}</InfoValue>
               <AddressBlock>
                 <span>
-                  {invoice.clientAddress?.street || "106 Kendell Street"}
+                  {invoice.clientAddress?.street || null}
                 </span>
-                <span>{invoice.clientAddress?.city || "Sharrington"}</span>
-                <span>{invoice.clientAddress?.postCode || "NR24 5WQ"}</span>
+                <span>{invoice.clientAddress?.city || null}</span>
+                <span>{invoice.clientAddress?.postCode || null}</span>
                 <span>
-                  {invoice.clientAddress?.country || "United Kingdom"}
+                  {invoice.clientAddress?.country || null}
                 </span>
               </AddressBlock>
             </InfoCol>

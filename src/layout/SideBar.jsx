@@ -1,13 +1,16 @@
 import styled from "styled-components";
 import avatar from "../assets/image-avatar.jpg";
 import ThemeToggle from "../components/ThemeToggle";
+import { Link } from "react-router-dom";
 
 export default function SideBar() {
   return (
     <Bar>
+      <Link to="/">
       <Logo>
         <Img src="/logo2.png" />
       </Logo>
+      </Link>
       <BottomCont>
         <ThemeToggle />
         <Line />

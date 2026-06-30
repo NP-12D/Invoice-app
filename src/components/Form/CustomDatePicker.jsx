@@ -15,7 +15,9 @@ export default function CustomDatePicker({ selectedDate, onSelectDate, show, set
     const days = [];
     const firstDayIndex = new Date(year, month, 1).getDay();
     const totalDays = new Date(year, month + 1, 0).getDate();
+    
     const adjustedFirst = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
+    
     for (let i = 0; i < adjustedFirst; i++) days.push(null);
     for (let i = 1; i <= totalDays; i++) days.push(new Date(year, month, i));
     return days;
@@ -37,6 +39,7 @@ export default function CustomDatePicker({ selectedDate, onSelectDate, show, set
   const formatDisplay = (dateStr) => {
     if (!dateStr) return "Select Date";
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "Select Date"; 
     return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
   };
 
@@ -78,12 +81,14 @@ export default function CustomDatePicker({ selectedDate, onSelectDate, show, set
           <DaysGrid>
             {getDaysInMonth(currentMonth).map((day, idx) => {
               if (!day) return <span key={`empty-${idx}`} />;
+              
               const isToday = new Date().toDateString() === day.toDateString();
               const dateKey = `${day.getFullYear()}-${String(day.getMonth()+1).padStart(2,"0")}-${String(day.getDate()).padStart(2,"0")}`;
               const isSelected = selectedDate === dateKey;
+              
               return (
                 <DayBtn
-                  key={day.toISOString()}
+                  key={`day-${dateKey}-${idx}`}
                   type="button"
                   $today={isToday}
                   $selected={isSelected}
@@ -100,11 +105,13 @@ export default function CustomDatePicker({ selectedDate, onSelectDate, show, set
   );
 }
 
+
 const Wrapper = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 100%;
 `;
 
 const FieldLabel = styled.label`
@@ -112,36 +119,45 @@ const FieldLabel = styled.label`
   font-weight: 500;
   color: ${({ theme }) => theme.secondaryText};
   letter-spacing: -0.1px;
+  font-family: inherit;
 `;
+
 const Trigger = styled.button`
   height: 48px;
-  background-color: ${({ theme }) => theme.card};
+  background-color: ${({ theme }) => theme.inputBg || theme.card};
   border: 1px solid ${({ $active, theme }) => ($active ? theme.accent : theme.border)};
   border-radius: 4px;
   padding: 0 20px;
   color: ${({ theme }) => theme.text};
   font-size: 15px;
+  font-weight: 700; 
   outline: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
   width: 100%;
+  font-family: inherit;
   transition: border-color 0.2s ease;
 
-  &:hover { border-color: ${({ theme }) => theme.accent}; }
+  &:hover { 
+    border-color: ${({ theme }) => theme.accent}; 
+  }
 `;
+
 const CalendarDropdown = styled.div`
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
   width: 100%;
-  min-width: 260px;
-  background-color: ${({ theme }) => theme.secondaryBg};
+  min-width: 240px;
+  background-color: ${({ theme }) => theme.card}; 
   border-radius: 8px;
-  padding: 16px;
+  padding: 24px 16px;
   z-index: 1000;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+  box-shadow: 0px 10px 20px rgba(72, 84, 159, 0.25); 
+  box-sizing: border-box;
+  border: 1px solid ${({ theme }) => theme.border};
 `;
 
 const CalendarHeader = styled.div`
@@ -150,8 +166,10 @@ const CalendarHeader = styled.div`
   align-items: center;
   color: ${({ theme }) => theme.text};
   font-weight: 700;
-  font-size: 14px;
-  margin-bottom: 16px;
+  font-size: 13px;
+  letter-spacing: -0.25px;
+  margin-bottom: 24px;
+  user-select: none;
 `;
 
 const NavBtn = styled.button`
@@ -160,40 +178,53 @@ const NavBtn = styled.button`
   cursor: pointer;
   display: flex;
   align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: transform 0.1s ease;
+  
+  &:hover {
+    svg { stroke: ${({ theme }) => theme.accentHover}; }
+  }
 `;
 
 const WeekdaysGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
-  font-size: 11px;
+  font-size: 12px;
   color: ${({ theme }) => theme.secondaryText};
-  font-weight: 700;
-  margin-bottom: 12px;
-  opacity: 0.8;
+  font-weight: 500;
+  margin-bottom: 16px;
+  display: none; 
 `;
 
 const DaysGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  row-gap: 12px;
+  column-gap: 8px;
 `;
+
 const DayBtn = styled.button`
-  background: ${({ $selected, theme }) => ($selected ? theme.accent : "transparent")};
-  border: ${({ $today, theme }) => ($today ? `1px dashed ${theme.accent}` : "none")};
-  height: 28px;
-  border-radius: 4px;
-  color: ${({ $selected, theme }) => ($selected ? theme.buttonText : theme.text)};
+  background: transparent;
+  border: none;
+  height: 24px;
+  width: 100%;
+  color: ${({ $selected, $today, theme }) => 
+    $selected ? theme.accent : $today ? theme.accent : theme.text
+  };
   font-size: 13px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  font-weight: ${({ $selected }) => ($selected ? "700" : "400")};
+  transition: color 0.2s ease, font-weight 0.2s ease;
+  font-family: inherit;
+  font-weight: ${({ $selected, $today }) => ($selected || $today ? "700" : "500")};
+  opacity: ${({ $selected, $today }) => ($selected || $today ? "1" : "0.7")};
 
   &:hover {
-    background-color: rgba(124,93,250,0.15);
     color: ${({ theme }) => theme.accent};
+    opacity: 1;
   }
 `;
