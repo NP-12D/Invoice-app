@@ -1,5 +1,7 @@
 import styled from "styled-components";
 import InvoiceViewHeader from "./InvoiceViewHeader";
+import { useState } from "react";
+import DeleteModal from "./DeleteModal";
 
 export default function InvoiceDetail({
   invoice,
@@ -8,6 +10,7 @@ export default function InvoiceDetail({
   onMarkAsPaid,
   onBack,
 }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
@@ -23,126 +26,134 @@ export default function InvoiceDetail({
   return (
     <Wrapper>
       <div>
-      <GoBackButton onClick={onBack || (() => console.log("Go back clicked"))}>
-        <ArrowIcon width="7" height="10" viewBox="0 0 7 10" fill="none">
-          <path
-            d="M1 1l4 4-4 4"
-            stroke="#7C5DFA"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </ArrowIcon>
-        <span>Go back</span>
-      </GoBackButton>
+        <GoBackButton
+          onClick={onBack || (() => console.log("Go back clicked"))}
+        >
+          <ArrowIcon width="7" height="10" viewBox="0 0 7 10" fill="none">
+            <path
+              d="M1 1l4 4-4 4"
+              stroke="#7C5DFA"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </ArrowIcon>
+          <span>Go back</span>
+        </GoBackButton>
 
-      {/* Header (status + controls) */}
-      <InvoiceViewHeader
-        status={invoice.status}
-        onEdit={onEdit}
-        onDelete={onDelete}
-        onMarkAsPaid={() => onMarkAsPaid(invoice.id)}
-      />
+        <InvoiceViewHeader
+          status={invoice.status}
+          onEdit={onEdit}
+          onDelete={() => setIsModalOpen(true)}
+          onMarkAsPaid={() => onMarkAsPaid(invoice.id)}
+        />
 
-      {/* Main Detail Card */}
-      <DetailCard>
-        <CardTopRow>
-          <InvoiceIdBox>
-            <h2>
-              <span>#</span>
-              {invoice.id}
-            </h2>
-            <ProjectDesc>
-              {invoice.projectDescription || "No Description"}
-            </ProjectDesc>
-          </InvoiceIdBox>
-          <SenderAddress>
-            <span>{invoice.senderStreet || "19 Union Terrace"}</span>
-            <span>{invoice.senderCity || "London"}</span>
-            <span>{invoice.senderPostCode || "E1 3EZ"}</span>
-            <span>{invoice.senderCountry || "United Kingdom"}</span>
-          </SenderAddress>
-        </CardTopRow>
+        <DetailCard>
+          <CardTopRow>
+            <InvoiceIdBox>
+              <h2>
+                <span>#</span>
+                {invoice.id}
+              </h2>
+              <ProjectDesc>
+                {invoice.projectDescription || "No Description"}
+              </ProjectDesc>
+            </InvoiceIdBox>
+            <SenderAddress>
+              <span>{invoice.senderStreet || "19 Union Terrace"}</span>
+              <span>{invoice.senderCity || "London"}</span>
+              <span>{invoice.senderPostCode || "E1 3EZ"}</span>
+              <span>{invoice.senderCountry || "United Kingdom"}</span>
+            </SenderAddress>
+          </CardTopRow>
 
-        <CardMiddleGrid>
-          <InfoCol style={{ gap: "32px" }}>
-            <div>
-              <InfoLabel>Invoice Date</InfoLabel>
-              <InfoValue>{formatDate(invoice.createdAt)}</InfoValue>
-            </div>
-            <div>
-              <InfoLabel>Payment Due</InfoLabel>
-              <InfoValue>{formatDate(invoice.paymentDue)}</InfoValue>
-            </div>
-          </InfoCol>
+          <CardMiddleGrid>
+            <InfoCol style={{ gap: "32px" }}>
+              <div>
+                <InfoLabel>Invoice Date</InfoLabel>
+                <InfoValue>{formatDate(invoice.createdAt)}</InfoValue>
+              </div>
+              <div>
+                <InfoLabel>Payment Due</InfoLabel>
+                <InfoValue>{formatDate(invoice.paymentDue)}</InfoValue>
+              </div>
+            </InfoCol>
 
-          <InfoCol>
-            <InfoLabel>Bill To</InfoLabel>
-            <InfoValue>{invoice.clientName}</InfoValue>
-            <AddressBlock>
-              <span>{invoice.clientStreet || "106 Kendell Street"}</span>
-              <span>{invoice.clientCity || "Sharrington"}</span>
-              <span>{invoice.clientPostCode || "NR24 5WQ"}</span>
-              <span>{invoice.clientCountry || "United Kingdom"}</span>
-            </AddressBlock>
-          </InfoCol>
+            <InfoCol>
+              <InfoLabel>Bill To</InfoLabel>
+              <InfoValue>{invoice.clientName}</InfoValue>
+              <AddressBlock>
+                <span>{invoice.clientStreet || "106 Kendell Street"}</span>
+                <span>{invoice.clientCity || "Sharrington"}</span>
+                <span>{invoice.clientPostCode || "NR24 5WQ"}</span>
+                <span>{invoice.clientCountry || "United Kingdom"}</span>
+              </AddressBlock>
+            </InfoCol>
 
-          <InfoCol>
-            <InfoLabel>Sent to</InfoLabel>
-            <EmailText>{invoice.clientEmail || "client@mail.com"}</EmailText>
-          </InfoCol>
-        </CardMiddleGrid>
+            <InfoCol>
+              <InfoLabel>Sent to</InfoLabel>
+              <EmailText>{invoice.clientEmail || "client@mail.com"}</EmailText>
+            </InfoCol>
+          </CardMiddleGrid>
 
-        <PricingTableContainer>
-          <TableBodyPadding>
-            <TableHeader>
-              <ColName>Item Name</ColName>
-              <ColQty>QTY.</ColQty>
-              <ColPrice>Price</ColPrice>
-              <ColTotal>Total</ColTotal>
-            </TableHeader>
+          <PricingTableContainer>
+            <TableBodyPadding>
+              <TableHeader>
+                <ColName>Item Name</ColName>
+                <ColQty>QTY.</ColQty>
+                <ColPrice>Price</ColPrice>
+                <ColTotal>Total</ColTotal>
+              </TableHeader>
 
-            {(invoice.items || []).map((item) => (
-              <TableRow key={item.id}>
-                <ColName>
-                  <span>{item.name}</span>
-                  <MobileItemMeta>
-                    {item.qty} x £{Number(item.price).toFixed(2)}
-                  </MobileItemMeta>
-                </ColName>
-                <ColQty>{item.qty}</ColQty>
-                <ColPrice>£{Number(item.price).toFixed(2)}</ColPrice>
-                <ColTotal>£{Number(item.total).toFixed(2)}</ColTotal>
-              </TableRow>
-            ))}
-          </TableBodyPadding>
+              {(invoice.items || []).map((item) => (
+                <TableRow key={item.id}>
+                  <ColName>
+                    <span>{item.name}</span>
+                    <MobileItemMeta>
+                      {item.qty} x £{Number(item.price).toFixed(2)}
+                    </MobileItemMeta>
+                  </ColName>
+                  <ColQty>{item.qty}</ColQty>
+                  <ColPrice>£{Number(item.price).toFixed(2)}</ColPrice>
+                  <ColTotal>£{Number(item.total).toFixed(2)}</ColTotal>
+                </TableRow>
+              ))}
+            </TableBodyPadding>
 
-          <TableFooterBanner>
-            <FooterBannerLabel>Amount Due</FooterBannerLabel>
-            <FooterBannerValue>
-              £{Number(invoice.total).toFixed(2)}
-            </FooterBannerValue>
-          </TableFooterBanner>
-        </PricingTableContainer>
-      </DetailCard>
+            <TableFooterBanner>
+              <FooterBannerLabel>Amount Due</FooterBannerLabel>
+              <FooterBannerValue>
+                £{Number(invoice.total).toFixed(2)}
+              </FooterBannerValue>
+            </TableFooterBanner>
+          </PricingTableContainer>
+        </DetailCard>
       </div>
+      <DeleteModal
+        isOpen={isModalOpen}
+        invoiceId={invoice.id}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={() => {
+          onDelete(invoice.id);
+          setIsModalOpen(false);
+        }}
+      />
     </Wrapper>
   );
 }
 
-/* 📍 Styled Components თემების მხარდაჭერით */
 const Wrapper = styled.div`
   width: 100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0 auto;
   padding: 48px 24px;
   box-sizing: border-box;
   background-color: ${({ theme }) => theme.background};
   min-height: 100vh;
   transition: background-color 0.3s ease;
-  padding-top:64px;
+  padding-top: 64px;
 
   @media (max-width: 650px) {
     padding: 32px 16px;
@@ -176,7 +187,7 @@ const ArrowIcon = styled.svg`
 `;
 
 const DetailCard = styled.div`
- width: 730px;
+  width: 730px;
   background-color: ${({ theme }) => theme.card};
   border-radius: 8px;
   padding: 48px;
