@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
-import arrowDown from "../assets/icon-arrow-down.svg";
-import arrowcheck from "../assets/icon-check.svg";
+import arrowDown from "../../assets/icon-arrow-down.svg";
+import arrowcheck from "../../assets/icon-check.svg";
 import { useRecoilState } from "recoil";
-import { filtersState } from "../utilis/invoicesAtom";
+import { filtersState } from "../../utilis/invoicesAtom";
 
 const STATUS_OPTIONS = [
   { id: "draft", label: "Draft" },
@@ -15,6 +15,8 @@ export default function Filter() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [activeFilters, setActiveFilters] = useRecoilState(filtersState);
+  console.log("activeFilters ", activeFilters);
+
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -30,7 +32,7 @@ export default function Filter() {
     setActiveFilters((prev) =>
       prev.includes(status)
         ? prev.filter((s) => s !== status)
-        : [...prev, status]
+        : [...prev, status],
     );
   };
 
@@ -52,7 +54,7 @@ export default function Filter() {
                   checked={isChecked}
                   onChange={() => handleFilterChange(status.id)}
                 />
-                <Checkmark checked={isChecked}>
+                <Checkmark $checked={isChecked}>
                   <img src={arrowcheck} alt="check" />
                 </Checkmark>
                 {status.label}
@@ -82,9 +84,9 @@ const FilterButton = styled.button`
   gap: 6px;
   @media (max-width: 600px) {
     gap: 12px;
-    
+
     .hide-mobile {
-      display: none; 
+      display: none;
     }
   }
 `;
@@ -106,9 +108,9 @@ const Dropdown = styled.div`
   padding: 16px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
   z-index: 100;
- 
+
   @media (max-width: 600px) {
-     transform: translateX(50%);
+    transform: translateX(50%);
   }
 `;
 
@@ -128,7 +130,7 @@ const CheckboxLabel = styled.label`
   margin-bottom: 8px;
   &:hover span {
     border: 1.5px solid
-      ${({ checked, theme }) => (checked ? "#7C5DFA" : theme.accent)};
+      ${({ $checked, theme }) => ($checked ? "#7C5DFA" : theme.accent)};
   }
 `;
 
@@ -137,8 +139,8 @@ const Checkmark = styled.span`
   height: 16px;
   border-radius: 4px;
   margin-right: 12px;
-  background-color: ${({ checked, theme }) =>
-    checked ? "#7C5DFA" : theme.secondaryHover};
+  background-color: ${({ $checked, theme }) =>
+    $checked ? "#7C5DFA" : theme.secondaryHover};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -146,6 +148,6 @@ const Checkmark = styled.span`
   img {
     width: 7.5px;
     height: 5.3px;
-    display: ${({ checked }) => (checked ? "flex" : "none")};
+    display: ${({ $checked }) => ($checked ? "flex" : "none")};
   }
 `;

@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import SideBar from "../layout/SideBar";
-import InvoiceHeader from "../components/InvoiceHeader";
+import InvoiceHeader from "../components/Home/InvoiceHeader";
 import { useState } from "react";
-import Card from "../components/Card";
+import Card from "../components/Home/Card";
 import InvoiceForm from "../components/Form/InvoiceForm";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { filteredInvoicesState, invoicesState } from "../utilis/invoicesAtom";
@@ -17,7 +17,9 @@ export default function Home() {
     setInvoices((prevInvoices) => {
       const exists = prevInvoices.some((inv) => inv.id === newInvoice.id);
       if (exists) {
-        return prevInvoices.map((inv) => (inv.id === newInvoice.id ? newInvoice : inv));
+        return prevInvoices.map((inv) =>
+          inv.id === newInvoice.id ? newInvoice : inv,
+        );
       }
       return [newInvoice, ...prevInvoices];
     });
@@ -45,7 +47,7 @@ export default function Home() {
           )}
         </Container>
       </Main>
-      
+
       <InvoiceForm
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}

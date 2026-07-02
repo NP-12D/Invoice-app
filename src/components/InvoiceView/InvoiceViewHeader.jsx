@@ -1,7 +1,12 @@
 import styled from "styled-components";
-import Status from "./Status";
+import Status from "../Status";
 
-export default function InvoiceDetailHeader({ status = "pending", onEdit, onDelete, onMarkAsPaid }) {
+export default function InvoiceDetailHeader({
+  status = "pending",
+  onEdit,
+  onDelete,
+  onMarkAsPaid,
+}) {
   return (
     <Container>
       <StatusSection>
@@ -12,7 +17,9 @@ export default function InvoiceDetailHeader({ status = "pending", onEdit, onDele
       <ActionsSection>
         <ButtonEdit onClick={onEdit}>Edit</ButtonEdit>
         <ButtonDelete onClick={onDelete}>Delete</ButtonDelete>
-        {status !== "paid" && <ButtonPaid onClick={onMarkAsPaid}>Mark as Paid</ButtonPaid>}
+        {status !== "paid" && (
+          <ButtonPaid onClick={onMarkAsPaid}>Mark as Paid</ButtonPaid>
+        )}
       </ActionsSection>
     </Container>
   );
@@ -21,7 +28,7 @@ export default function InvoiceDetailHeader({ status = "pending", onEdit, onDele
 const Container = styled.div`
   width: 100%;
   max-width: 730px;
-  background-color: ${({ theme }) => theme.card}; 
+  background-color: ${({ theme }) => theme.card};
   border-radius: 8px;
   padding: 24px 32px;
   display: flex;
@@ -34,7 +41,7 @@ const Container = styled.div`
   @media (max-width: 650px) {
     padding: 24px;
     /* On mobile, Container only holds the status bar */
-    justify-content: center; 
+    justify-content: center;
   }
 `;
 
@@ -50,7 +57,7 @@ const StatusSection = styled.div`
 `;
 
 const StatusLabel = styled.span`
-  color: ${({ theme }) => theme.secondaryText}; 
+  color: ${({ theme }) => theme.secondaryText};
   font-size: 13px;
   font-weight: 500;
   letter-spacing: -0.1px;
@@ -84,7 +91,10 @@ const ButtonBase = styled.button`
   font-weight: 700;
   letter-spacing: -0.25px;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.1s ease;
 
   &:active {
     transform: scale(0.98);
@@ -103,7 +113,8 @@ const ButtonEdit = styled(ButtonBase)`
 
   &:hover {
     background-color: ${({ theme }) => theme.secondaryHover};
-    color: ${({ theme }) => theme.text === "#0C0E16" ? theme.secondaryText : "#7E88C3"};
+    color: ${({ theme }) =>
+      theme.text === "#0C0E16" ? theme.secondaryText : "#7E88C3"};
   }
 `;
 
@@ -117,10 +128,10 @@ const ButtonDelete = styled(ButtonBase)`
 `;
 
 const ButtonPaid = styled(ButtonBase)`
-  background-color: ${({ theme }) => theme.buttonBg}; 
-  color: ${({ theme }) => theme.buttonText}; 
+  background-color: ${({ theme }) => theme.buttonBg};
+  color: ${({ theme }) => theme.buttonText};
 
   &:hover {
-    background-color: ${({ theme }) => theme.buttonHover}; 
+    background-color: ${({ theme }) => theme.buttonHover};
   }
 `;

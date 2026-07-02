@@ -1,31 +1,31 @@
-import { useParams, useNavigate } from "react-router-dom"; 
+import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import InvoiceDetail from "./InvoiceDetail";
-import SideBar from "../layout/SideBar";
+import SideBar from "../../layout/SideBar";
 import { useRecoilState } from "recoil";
-import { invoicesState } from "../utilis/invoicesAtom";
+import { invoicesState } from "../../utilis/invoicesAtom";
 
 export default function InvoiceView() {
   const { id } = useParams();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [invoices, setInvoices] = useRecoilState(invoicesState);
 
   const invoice = invoices.find((inv) => inv.id === id);
 
   const handleSaveEdit = (updatedInvoice) => {
     setInvoices((prev) =>
-      prev.map((inv) => (inv.id === updatedInvoice.id ? updatedInvoice : inv))
+      prev.map((inv) => (inv.id === updatedInvoice.id ? updatedInvoice : inv)),
     );
   };
 
   const handleDelete = (id) => {
     setInvoices((prev) => prev.filter((inv) => inv.id !== id));
-    navigate("/"); 
+    navigate("/");
   };
 
   const handleMarkAsPaid = (id) => {
     setInvoices((prev) =>
-      prev.map((inv) => (inv.id === id ? { ...inv, status: "paid" } : inv))
+      prev.map((inv) => (inv.id === id ? { ...inv, status: "paid" } : inv)),
     );
   };
 
@@ -39,9 +39,8 @@ export default function InvoiceView() {
         onDelete={handleDelete}
         onMarkAsPaid={handleMarkAsPaid}
         onSaveEdit={handleSaveEdit}
-        onBack={() => navigate("/")} 
+       
       />
-      
     </>
   );
 }

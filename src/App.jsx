@@ -1,11 +1,10 @@
-import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 import { useRecoilValue } from "recoil";
 import Home from "./pages/Home";
 import { themeAtom } from "./utilis/themeAtom";
 import { lightTheme, darkTheme } from "./utilis/Themes";
-import InvoiceView from "./components/InvoiceView";
+import InvoiceView from "./components/InvoiceView/InvoiceView";
 import { useEffect } from "react";
 import { useSetRecoilState } from "recoil";
 import { invoicesState } from "./utilis/invoicesAtom";
@@ -17,7 +16,7 @@ function App() {
   useEffect(() => {
     async function getData() {
       try {
-        const response = await axios.get("/data.json");
+        const response = await axios.get("/data/data.json");
         setData(response.data);
       } catch (error) {
         console.error("Error loading data:", error);

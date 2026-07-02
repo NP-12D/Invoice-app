@@ -1,5 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { invoiceValidationSchema } from "./yup";
+import { useEffect, useRef } from "react";
 import styled, { keyframes } from "styled-components";
+import { useForm, useFieldArray } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+
 import FormFields from "./FormFields";
 import ItemRows from "./ItemRows";
 import FormFooter from "./FormFooter";
@@ -9,171 +13,168 @@ const EMPTY_FORM = {
   clientAddress: { street: "", city: "", postCode: "", country: "" },
   clientName: "",
   clientEmail: "",
-  invoiceDate: new Date().toISOString().split("T")[0],
+  createdAt: new Date().toISOString().split("T")[0],
   paymentTerms: "30",
   description: "",
-  items: [],
+  items: [{ name: "", quantity: 1, price: 0, total: 0 }],
 };
 
-export default function InvoiceForm({ isOpen, onClose, onSave, invoiceToEdit }) {
-  const [formData, setFormData] = useState(EMPTY_FORM);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+export default function InvoiceForm({
+  isOpen,
+  onClose,
+  onSave,
+  invoiceToEdit,
+}) {
   const datePickerRef = useRef(null);
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(invoiceValidationSchema),
+    defaultValues: structuredClone(EMPTY_FORM),
+    mode: "onSubmit",
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "items",
+  });
 
   useEffect(() => {
     if (isOpen) {
       if (invoiceToEdit) {
-        setFormData({
-          ...invoiceToEdit,
-          senderAddress: { ...(invoiceToEdit.senderAddress || {}) },
-          clientAddress: { ...(invoiceToEdit.clientAddress || {}) },
-          items: (invoiceToEdit.items || []).map((item, index) => ({
-            ...item,
-            id: item.id || `existing-item-${index}`,
-            quantity: item.quantity || item.qty || 1, 
-          }))
-        });
+        reset(structuredClone(invoiceToEdit));
       } else {
-        setFormData({
-          ...EMPTY_FORM,
-          senderAddress: { ...EMPTY_FORM.senderAddress },
-          clientAddress: { ...EMPTY_FORM.clientAddress },
-          items: [{ id: `new-item-${Date.now()}`, name: "", quantity: 1, price: 0, total: 0 }]
-        });
+        reset(structuredClone(EMPTY_FORM));
       }
     }
-  }, [invoiceToEdit, isOpen]);
-
-  useEffect(() => {
-    function handleOutside(e) {
-      if (datePickerRef.current && !datePickerRef.current.contains(e.target)) {
-        setShowDatePicker(false);
-      }
-    }
-    document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
-  }, []);
+  }, [invoiceToEdit, isOpen, reset]);
 
   if (!isOpen) return null;
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const onSubmitHandler = (data) => {
+    const cleanData = structuredClone(data);
+    const issueDate = new Date(cleanData.createdAt);
+    const termsDays = Number(cleanData.paymentTerms || 30);
+    issueDate.setDate(issueDate.getDate() + termsDays);
+    const paymentDue = issueDate.toISOString().split("T")[0];
 
-    setFormData((prev) => {
-      if (!name.includes(".")) {
-        return { ...prev, [name]: value };
-      }
-      const [parentKey, childKey] = name.split(".");
-      return {
-        ...prev,
-        [parentKey]: {
-          ...(prev[parentKey] || {}), 
-          [childKey]: value,
-        },
-      };
-    });
-  };
-
-  const handleItemChange = (id, field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      items: prev.items.map((item) => {
-        if (item.id !== id) return item;
-
-        const targetField = field === "qty" ? "quantity" : field;
-        
-        const updated = { 
-          ...item, 
-          [targetField]: field === "price" ? (parseFloat(value) || 0) : (parseInt(value, 10) || 0)
-        };
-
-        updated.total = updated.quantity * updated.price;
-        return updated;
-      }),
-    }));
-  };
-
-  const addItem = () => {
-    setFormData((prev) => ({
-      ...prev,
-      items: [
-        ...prev.items, 
-        { id: `item-${Date.now()}`, name: "", quantity: 1, price: 0, total: 0 }
-      ],
-    }));
-  };
-
-  const deleteItem = (id) => {
-    if (formData.items.length === 1) return;
-    setFormData((prev) => ({ ...prev, items: prev.items.filter((i) => i.id !== id) }));
-  };
-
-  const handleSubmit = (actionType) => {
-    const total = formData.items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
-    
-    let finalStatus = "pending";
-
-    if (!invoiceToEdit) {
-      finalStatus = actionType === "draft" ? "draft" : "pending";
-    } else {
-      finalStatus = invoiceToEdit.status === "draft" && actionType === "send" ? "pending" : invoiceToEdit.status;
-    }
-
-    const sanitizedItems = formData.items.map(item => ({
-      name: item.name,
-      quantity: Number(item.quantity),
-      price: Number(item.price),
-      total: Number(item.total)
+    const total = cleanData.items.reduce(
+      (sum, item) => sum + Number(item.quantity) * Number(item.price),
+      0,
+    );
+    const sanitizedItems = cleanData.items.map((item) => ({
+      ...item,
+      total: Number(item.quantity) * Number(item.price),
     }));
 
     onSave({
-      ...formData,
-      id: invoiceToEdit ? invoiceToEdit.id : `RT${Math.floor(1000 + Math.random() * 9000)}`,
-      status: finalStatus,
+      ...cleanData,
+      id: invoiceToEdit
+        ? invoiceToEdit.id
+        : `RT${Math.floor(1000 + Math.random() * 9000)}`,
+      status: invoiceToEdit ? invoiceToEdit.status : "pending",
       items: sanitizedItems,
       total,
+      paymentDue, 
     });
-    
     onClose();
+  };
+
+  const handleSaveDraft = () => {
+    const currentValues = structuredClone(getValues());
+
+    const issueDate = new Date(currentValues.createdAt || new Date());
+    const termsDays = Number(currentValues.paymentTerms || 30);
+    issueDate.setDate(issueDate.getDate() + termsDays);
+    const paymentDue = issueDate.toISOString().split("T")[0];
+
+    onSave({
+      ...currentValues,
+      id: `RT${Math.floor(1000 + Math.random() * 9000)}`,
+      status: "draft",
+      paymentDue,
+      total:
+        currentValues.items?.reduce(
+          (sum, item) =>
+            sum + Number(item.quantity || 0) * Number(item.price || 0),
+          0,
+        ) || 0,
+    });
+    onClose();
+  };
+
+  const onFooterActionClick = (actionType) => {
+    if (actionType === "draft") {
+      handleSaveDraft();
+    } else {
+      handleSubmit(onSubmitHandler)();
+    }
   };
 
   return (
     <Overlay>
       <Backdrop onClick={onClose} />
       <Panel>
-        <FormBody className="custom-scroll">
+        <FormBody className="form-body-container custom-scroll">
           <GoBackMobile onClick={onClose}>
             <svg width="7" height="10" viewBox="0 0 7 10" fill="none">
-              <path d="M6 1L2 5l4 4" stroke="#7C5DFA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M6 1L2 5l4 4"
+                stroke="#7C5DFA"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             <span>Go back</span>
           </GoBackMobile>
-
           <Title>
-            {invoiceToEdit ? <>Edit <span>#</span>{invoiceToEdit.id}</> : "New Invoice"}
+            {invoiceToEdit ? (
+              <>
+                Edit <span>#</span>
+                {invoiceToEdit.id}
+              </>
+            ) : (
+              "New Invoice"
+            )}
           </Title>
 
           <FormFields
-            formData={formData}
-            handleInputChange={handleInputChange}
-            setFormData={setFormData}
-            showDatePicker={showDatePicker}
-            setShowDatePicker={setShowDatePicker}
+            register={register}
+            errors={errors}
+            control={control}
+            setValue={setValue}
             datePickerRef={datePickerRef}
           />
 
           <ItemRows
-            items={formData.items}
-            handleItemChange={handleItemChange}
-            addItem={addItem}
-            deleteItem={deleteItem}
+            fields={fields}
+            append={append}
+            remove={remove}
+            register={register}
+            errors={errors}
+            control={control}
           />
+
+          {errors.items?.root && (
+            <ErrorMessageText>{errors.items.root.message}</ErrorMessageText>
+          )}
+          {Object.keys(errors).length > 0 && (
+            <GlobalErrorText>- All fields must be populated</GlobalErrorText>
+          )}
         </FormBody>
 
         <FormFooter
           isEditMode={!!invoiceToEdit}
           onClose={onClose}
-          onActionClick={handleSubmit} 
+          onActionClick={onFooterActionClick}
         />
       </Panel>
     </Overlay>
@@ -181,12 +182,13 @@ export default function InvoiceForm({ isOpen, onClose, onSave, invoiceToEdit }) 
 }
 
 const fadeIn = keyframes`from { opacity: 0; } to { opacity: 1; }`;
-const slideIn = keyframes`from { transform: translateX(-100%); } to { transform: translateX(0); }`;
+const slideInDesktop = keyframes`from { transform: translateX(-100%); } to { transform: translateX(0); }`;
+const slideInMobile = keyframes`from { transform: translateY(100%); } to { transform: translateY(0); }`;
 
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  z-index: 99; 
+  z-index: 9999;
   display: flex;
 `;
 
@@ -200,49 +202,76 @@ const Backdrop = styled.div`
 
 const Panel = styled.div`
   position: absolute;
-  left: 0;
   background-color: ${({ theme }) => theme.background};
   display: flex;
   flex-direction: column;
   box-shadow: 20px 0 50px rgba(0, 0, 0, 0.15);
-  animation: ${slideIn} 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   color: ${({ theme }) => theme.text};
   z-index: 2;
-  
-  @media (max-width: 650px) {
-    top: 70px; 
+  box-sizing: border-box;
+
+  @media (min-width: 1024px) {
+    top: 0;
+    padding-left: 103px;
     width: 100%;
-    max-width: 100%;
-    height: calc(100vh - 70px);
+    max-width: 640px;
+    height: 100vh;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    animation: ${slideInDesktop} 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   @media (min-width: 651px) and (max-width: 1023px) {
-    top: 80px; 
+    top: 80px;
+    left: 0;
+    padding-left: 0px;
     width: 100%;
     max-width: 616px;
     height: calc(100vh - 80px);
     border-top-right-radius: 20px;
-    border-bottom-right-radius: 20px;
+    animation: ${slideInDesktop} 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  @media (min-width: 1024px) {
-    top: 0;
-    left: 103px;
+  @media (max-width: 650px) {
+    top: 72px;
+    left: 0;
     width: 100%;
-    max-width: 616px;
-    height: 100vh;
-    border-top-right-radius: 20px;
-    border-bottom-right-radius: 20px;
+    max-width: 100%;
+    height: calc(100vh - 72px);
+    animation: ${slideInMobile} 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 `;
 
 const FormBody = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 32px 24px 32px;
-  @media (min-width: 1024px) { padding: 56px 56px 32px; }
-  &::-webkit-scrollbar { width: 8px; }
-  &::-webkit-scrollbar-thumb { background-color: ${({ theme }) => theme.border}; border-radius: 4px; }
+  box-sizing: border-box;
+  margin-right: 12px;
+  padding: 24px 12px 32px 24px;
+
+  @media (min-width: 1024px) {
+    margin-right: 20px;
+    padding: 56px 20px 32px 56px;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    margin-top: 24px;
+    margin-bottom: 24px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: ${({ theme }) => theme.scrol};
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: ${({ theme }) => theme.secondaryHover};
+  }
 `;
 
 const GoBackMobile = styled.button`
@@ -251,22 +280,49 @@ const GoBackMobile = styled.button`
   color: ${({ theme }) => theme.text};
   font-weight: 700;
   font-size: 15px;
+  letter-spacing: -0.25px;
   cursor: pointer;
+  display: none;
   align-items: center;
-  gap: 24px;
+  gap: 12px;
   margin-bottom: 24px;
   padding: 0;
   font-family: inherit;
-  display: none;
-  @media (max-width: 650px) { display: flex; }
+
+  @media (max-width: 650px) {
+    display: flex;
+  }
 `;
 
 const Title = styled.h2`
+  font-family: "League Spartan", sans-serif;
   font-size: 24px;
   font-weight: 700;
   color: ${({ theme }) => theme.text};
-  margin-bottom: 48px;
+  margin: 0 0 48px 0;
   letter-spacing: -0.5px;
-  span { color: ${({ theme }) => theme.secondaryText}; }
-  @media (max-width: 600px) { font-size: 20px; margin-bottom: 24px; }
+
+  span {
+    color: #7e88c3;
+  }
+
+  @media (max-width: 650px) {
+    font-size: 20px;
+    margin-bottom: 24px;
+  }
+`;
+
+const GlobalErrorText = styled.p`
+  color: #ec5757;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 32px;
+  letter-spacing: -0.21px;
+`;
+
+const ErrorMessageText = styled.p`
+  color: #ec5757;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 12px;
 `;

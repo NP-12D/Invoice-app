@@ -27,6 +27,7 @@ const Footer = styled.div`
   height: 110px;
   background-color: ${({ theme }) => theme.card};
   border-top: 1px solid ${({ theme }) => theme.border};
+      border-bottom-right-radius: 20px;
   padding: 0 24px;
   display: flex;
   align-items: center;

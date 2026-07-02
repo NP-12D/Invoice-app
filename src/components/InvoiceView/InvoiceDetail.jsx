@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import InvoiceViewHeader from "./InvoiceViewHeader";
 import { useState } from "react";
-import DeleteModal from "./DeleteModal";
-import InvoiceForm from "./Form/InvoiceForm";
+import DeleteModal from "../DeleteModal";
+import InvoiceForm from "../Form/InvoiceForm";
 import { Link } from "react-router-dom";
 
 export default function InvoiceDetail({
@@ -63,10 +63,10 @@ export default function InvoiceDetail({
               </ProjectDesc>
             </InvoiceIdBox>
             <SenderAddress>
-              <span>{invoice.senderAddress?.street || "19 Union Terrace"}</span>
-              <span>{invoice.senderAddress?.city || "London"}</span>
-              <span>{invoice.senderAddress?.postCode || "E1 3EZ"}</span>
-              <span>{invoice.senderAddress?.country || "United Kingdom"}</span>
+              <span>{invoice.senderAddress?.street || null}</span>
+              <span>{invoice.senderAddress?.city || null}</span>
+              <span>{invoice.senderAddress?.postCode || null}</span>
+              <span>{invoice.senderAddress?.country || null}</span>
             </SenderAddress>
           </CardTopRow>
 

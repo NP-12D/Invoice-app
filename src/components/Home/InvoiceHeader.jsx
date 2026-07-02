@@ -2,13 +2,13 @@ import styled from "styled-components";
 import Filter from "./Filter";
 import AddButton from "./AddButton";
 
-export default function InvoiceHeader({ onAddClick, invoicesCount, activeFilters, onFilterChange }) {
+export default function InvoiceHeader({ onAddClick, invoicesCount }) {
   const renderSubtitle = () => {
     if (invoicesCount === 0) return "No invoices";
     return (
       <>
         <span className="hide-mobile">There are </span>
-        {invoicesCount} 
+        {invoicesCount}
         <span className="hide-mobile"> total</span> invoices
       </>
     );
@@ -22,11 +22,8 @@ export default function InvoiceHeader({ onAddClick, invoicesCount, activeFilters
       </LeftSection>
 
       <RightSection>
-        <Filter 
-          activeFilters={activeFilters} 
-          onFilterChange={onFilterChange} 
-        />
-       <AddButton onClick={onAddClick} />
+        <Filter />
+        <AddButton onClick={onAddClick} />
       </RightSection>
     </HeaderContainer>
   );
@@ -39,7 +36,7 @@ const HeaderContainer = styled.div`
   width: 100%;
   max-width: 730px;
   margin: 0 auto;
-  font-family: 'League Spartan', 'Spartan', sans-serif;
+  font-family: "League Spartan", "Spartan", sans-serif;
   box-sizing: border-box;
   padding: 0 10px;
 `;

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import plus from "../assets/icon-plus.svg";
+import plus from "../../assets/icon-plus.svg";
 export default function AddButton({onClick}) {
   return (
     <>

@@ -11,7 +11,7 @@ export const lightTheme = {
   secondaryBg: "#F9FAFE",
   secondaryText: "#7E88C3",
   secondaryHover: "#DFE3FA",
-
+  scrol:"#DFE3FA",
   border: "#DFE3FA",
 };
 
@@ -28,6 +28,6 @@ export const darkTheme = {
   secondaryBg: "#252945",
   secondaryText: "#DFE3FA",
   secondaryHover: "#1E2139",
-
+  scrol:"#252945",
   border: "#373B53",
 };

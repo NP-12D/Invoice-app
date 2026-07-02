@@ -2,24 +2,47 @@ import { useState } from "react";
 import styled from "styled-components";
 
 const MONTH_NAMES = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December"
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
 ];
 
 export default function CustomDatePicker({ selectedDate, onSelectDate, show, setShow, datePickerRef }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  const getDaysInMonth = (date) => {
+  const getCalendarDays = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
-    const days = [];
-    const firstDayIndex = new Date(year, month, 1).getDay();
-    const totalDays = new Date(year, month + 1, 0).getDate();
     
+    const firstDayIndex = new Date(year, month, 1).getDay();
     const adjustedFirst = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
     
-    for (let i = 0; i < adjustedFirst; i++) days.push(null);
-    for (let i = 1; i <= totalDays; i++) days.push(new Date(year, month, i));
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    const prevMonthTotalDays = new Date(year, month, 0).getDate();
+    
+    const days = [];
+
+    for (let i = adjustedFirst - 1; i >= 0; i--) {
+      days.push({
+        date: new Date(year, month - 1, prevMonthTotalDays - i),
+        isCurrentMonth: false
+      });
+    }
+
+    for (let i = 1; i <= totalDays; i++) {
+      days.push({
+        date: new Date(year, month, i),
+        isCurrentMonth: true
+      });
+    }
+
+    const remainingSlots = 42 - days.length;
+    for (let i = 1; i <= remainingSlots; i++) {
+      days.push({
+        date: new Date(year, month + 1, i),
+        isCurrentMonth: false
+      });
+    }
+
     return days;
   };
 
@@ -28,7 +51,6 @@ export default function CustomDatePicker({ selectedDate, onSelectDate, show, set
   };
 
   const handleDayClick = (day) => {
-    if (!day) return;
     const yyyy = day.getFullYear();
     const mm = String(day.getMonth() + 1).padStart(2, "0");
     const dd = String(day.getDate()).padStart(2, "0");
@@ -72,18 +94,10 @@ export default function CustomDatePicker({ selectedDate, onSelectDate, show, set
             </NavBtn>
           </CalendarHeader>
 
-          <WeekdaysGrid>
-            {["M","T","W","T","F","S","S"].map((d, i) => (
-              <span key={i}>{d}</span>
-            ))}
-          </WeekdaysGrid>
-
           <DaysGrid>
-            {getDaysInMonth(currentMonth).map((day, idx) => {
-              if (!day) return <span key={`empty-${idx}`} />;
-              
-              const isToday = new Date().toDateString() === day.toDateString();
-              const dateKey = `${day.getFullYear()}-${String(day.getMonth()+1).padStart(2,"0")}-${String(day.getDate()).padStart(2,"0")}`;
+            {getCalendarDays(currentMonth).map(({ date, isCurrentMonth }, idx) => {
+              const isToday = new Date().toDateString() === date.toDateString();
+              const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
               const isSelected = selectedDate === dateKey;
               
               return (
@@ -92,9 +106,10 @@ export default function CustomDatePicker({ selectedDate, onSelectDate, show, set
                   type="button"
                   $today={isToday}
                   $selected={isSelected}
-                  onClick={() => handleDayClick(day)}
+                  $isCurrentMonth={isCurrentMonth}
+                  onClick={() => handleDayClick(date)}
                 >
-                  {day.getDate()}
+                  {date.getDate()}
                 </DayBtn>
               );
             })}
@@ -104,7 +119,6 @@ export default function CustomDatePicker({ selectedDate, onSelectDate, show, set
     </Wrapper>
   );
 }
-
 
 const Wrapper = styled.div`
   position: relative;
@@ -125,7 +139,7 @@ const FieldLabel = styled.label`
 const Trigger = styled.button`
   height: 48px;
   background-color: ${({ theme }) => theme.inputBg || theme.card};
-  border: 1px solid ${({ $active, theme }) => ($active ? theme.accent : theme.border)};
+  border: 1px solid ${({ $active, theme }) => ($active ? "#7C5DFA" : theme.border)};
   border-radius: 4px;
   padding: 0 20px;
   color: ${({ theme }) => theme.text};
@@ -141,7 +155,7 @@ const Trigger = styled.button`
   transition: border-color 0.2s ease;
 
   &:hover { 
-    border-color: ${({ theme }) => theme.accent}; 
+    border-color: #7C5DFA; 
   }
 `;
 
@@ -180,29 +194,18 @@ const NavBtn = styled.button`
   align-items: center;
   padding: 4px;
   border-radius: 4px;
-  transition: transform 0.1s ease;
   
   &:hover {
-    svg { stroke: ${({ theme }) => theme.accentHover}; }
+    svg { stroke: #9277ff; }
   }
-`;
-
-const WeekdaysGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  text-align: center;
-  font-size: 12px;
-  color: ${({ theme }) => theme.secondaryText};
-  font-weight: 500;
-  margin-bottom: 16px;
-  display: none; 
 `;
 
 const DaysGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  row-gap: 12px;
-  column-gap: 8px;
+  row-gap: 16px;
+  column-gap: 12px;
+  text-align: center;
 `;
 
 const DayBtn = styled.button`
@@ -210,21 +213,27 @@ const DayBtn = styled.button`
   border: none;
   height: 24px;
   width: 100%;
-  color: ${({ $selected, $today, theme }) => 
-    $selected ? theme.accent : $today ? theme.accent : theme.text
-  };
   font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s ease, font-weight 0.2s ease;
   font-family: inherit;
-  font-weight: ${({ $selected, $today }) => ($selected || $today ? "700" : "500")};
-  opacity: ${({ $selected, $today }) => ($selected || $today ? "1" : "0.7")};
+  transition: color 0.2s ease;
+
+  color: ${({ $selected, $today, $isCurrentMonth, theme }) => {
+    if ($selected || $today) return "#7C5DFA";
+    if (!$isCurrentMonth) return theme.darkBlack || "#61647D";
+    return theme.text;
+  }};
+
+  opacity: ${({ $selected, $today, $isCurrentMonth }) => 
+    $selected || $today || $isCurrentMonth ? "1" : "0.6"
+  };
 
   &:hover {
-    color: ${({ theme }) => theme.accent};
+    color: #7C5DFA;
     opacity: 1;
   }
 `;

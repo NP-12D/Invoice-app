@@ -1,7 +1,7 @@
 import styled from "styled-components";
-import arrowRight from "../assets/icon-arrow-right.svg";
+import arrowRight from "../../assets/icon-arrow-right.svg";
 import { Link } from "react-router-dom";
-import Status from "./Status"; 
+import Status from "../Status";
 
 export default function Card({ item }) {
   if (!item) return null;
@@ -27,15 +27,16 @@ export default function Card({ item }) {
     <StyledLink to={`/invoice/${item.id}`}>
       <CardContainer>
         <InvoiceId>
-          <span>#</span>{item.id}
+          <span>#</span>
+          {item.id}
         </InvoiceId>
-        
+
         <DueDate>{formatDate(item.paymentDue)}</DueDate>
-        
+
         <ClientName>{item.clientName}</ClientName>
-        
+
         <TotalAmount>{formatCurrency(item.total)}</TotalAmount>
-        
+
         <StatusWrapper>
           <Status status={item.status} />
         </StatusWrapper>
@@ -45,7 +46,6 @@ export default function Card({ item }) {
     </StyledLink>
   );
 }
-
 
 const StyledLink = styled(Link)`
   text-decoration: none;
@@ -59,7 +59,9 @@ const CardContainer = styled.div`
   border-radius: 8px;
   box-shadow: 0px 10px 10px -10px rgba(72, 84, 159, 0.1);
   border: 1px solid transparent;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
   cursor: pointer;
   width: 100%;
   box-sizing: border-box;
@@ -79,7 +81,7 @@ const CardContainer = styled.div`
 
   @media (max-width: 600px) {
     grid-template-columns: 1fr 1fr;
-    grid-template-areas: 
+    grid-template-areas:
       "id client"
       "meta status";
     gap: 8px;
@@ -119,7 +121,7 @@ const DueDate = styled.p`
 const ClientName = styled.p`
   font-size: 13px;
   font-weight: 500;
-  color: ${({ theme }) => theme.text === "#0C0E16" ? "#858bb2" : "#FFFFFF"};
+  color: ${({ theme }) => (theme.text === "#0C0E16" ? "#858bb2" : "#FFFFFF")};
   margin: 0;
   text-align: left;
 

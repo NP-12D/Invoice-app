@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
+import { useWatch } from "react-hook-form";
 import CustomDatePicker from "./CustomDatePicker";
 
 const TERMS_OPTIONS = [
@@ -9,37 +10,42 @@ const TERMS_OPTIONS = [
   { value: "30", label: "Net 30 Days" },
 ];
 
-export default function FormFields({ 
-  formData, 
-  handleInputChange, 
-  setFormData, 
-  showDatePicker, 
-  setShowDatePicker, 
-  datePickerRef 
+export default function FormFields({
+  register,
+  errors,
+  control,
+  setValue,
+  datePickerRef,
 }) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false); 
   const dropdownRef = useRef(null);
 
-  // Close custom select dropdown if user clicks outside
+  const currentTerms = useWatch({ control, name: "paymentTerms" });
+  const createdAt = useWatch({ control, name: "createdAt" });
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
       }
+      if (
+        datePickerRef.current &&
+        !datePickerRef.current.contains(event.target)
+      ) {
+        setShowDatePicker(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [datePickerRef]);
 
   const currentTermLabel = TERMS_OPTIONS.find(
-    (opt) => opt.value === String(formData.paymentTerms || "30")
+    (opt) => opt.value === String(currentTerms || "30"),
   )?.label;
 
   const handleTermSelect = (value) => {
-    // Mimic standard change event shape to stay compatible with handleInputChange
-    handleInputChange({
-      target: { name: "paymentTerms", value },
-    });
+    setValue("paymentTerms", value);
     setShowDropdown(false);
   };
 
@@ -47,37 +53,70 @@ export default function FormFields({
     <>
       <Section>
         <SectionLabel>Bill From</SectionLabel>
+
         <FieldGroup>
-          <FieldLabel>Street Address</FieldLabel>
-          <Input 
-            name="senderAddress.street" 
-            value={formData.senderAddress?.street || ""} 
-            onChange={handleInputChange} 
+          <LabelRow>
+            <FieldLabel $hasError={!!errors.senderAddress?.street}>
+              Street Address
+            </FieldLabel>
+            {errors.senderAddress?.street && (
+              <ErrorMessage>{errors.senderAddress.street.message}</ErrorMessage>
+            )}
+          </LabelRow>
+          <Input
+            {...register("senderAddress.street")}
+            $hasError={!!errors.senderAddress?.street}
           />
         </FieldGroup>
+
         <ThreeCol>
           <FieldGroup>
-            <FieldLabel>City</FieldLabel>
-            <Input 
-              name="senderAddress.city" 
-              value={formData.senderAddress?.city || ""} 
-              onChange={handleInputChange} 
+            <LabelRow>
+              <FieldLabel $hasError={!!errors.senderAddress?.city}>
+                City
+              </FieldLabel>
+              {errors.senderAddress?.city && (
+                <ErrorMessage>{errors.senderAddress.city.message}</ErrorMessage>
+              )}
+            </LabelRow>
+            <Input
+              {...register("senderAddress.city")}
+              $hasError={!!errors.senderAddress?.city}
             />
           </FieldGroup>
+
           <FieldGroup>
-            <FieldLabel>Post Code</FieldLabel>
-            <Input 
-              name="senderAddress.postCode" 
-              value={formData.senderAddress?.postCode || ""} 
-              onChange={handleInputChange} 
+            <LabelRow>
+              <FieldLabel $hasError={!!errors.senderAddress?.postCode}>
+                Post Code
+              </FieldLabel>
+              {errors.senderAddress?.postCode && (
+                <ErrorMessage>
+                  {errors.senderAddress.postCode.message}
+                </ErrorMessage>
+              )}
+            </LabelRow>
+            <Input
+              {...register("senderAddress.postCode")}
+              defaultValue={control?._defaultValues?.clientAddress?.postCode || ""}
+              $hasError={!!errors.senderAddress?.postCode}
             />
           </FieldGroup>
+
           <FieldGroup>
-            <FieldLabel>Country</FieldLabel>
-            <Input 
-              name="senderAddress.country" 
-              value={formData.senderAddress?.country || ""} 
-              onChange={handleInputChange} 
+            <LabelRow>
+              <FieldLabel $hasError={!!errors.senderAddress?.country}>
+                Country
+              </FieldLabel>
+              {errors.senderAddress?.country && (
+                <ErrorMessage>
+                  {errors.senderAddress.country.message}
+                </ErrorMessage>
+              )}
+            </LabelRow>
+            <Input
+              {...register("senderAddress.country")}
+              $hasError={!!errors.senderAddress?.country}
             />
           </FieldGroup>
         </ThreeCol>
@@ -85,92 +124,145 @@ export default function FormFields({
 
       <Section>
         <SectionLabel>Bill To</SectionLabel>
+
         <FieldGroup>
-          <FieldLabel>Client's Name</FieldLabel>
-          <Input 
-            name="clientName" 
-            value={formData.clientName || ""} 
-            onChange={handleInputChange} 
+          <LabelRow>
+            <FieldLabel $hasError={!!errors.clientName}>
+              Client's Name
+            </FieldLabel>
+            {errors.clientName && (
+              <ErrorMessage>{errors.clientName.message}</ErrorMessage>
+            )}
+          </LabelRow>
+          <Input {...register("clientName")} $hasError={!!errors.clientName} />
+        </FieldGroup>
+
+        <FieldGroup>
+          <LabelRow>
+            <FieldLabel $hasError={!!errors.clientEmail}>
+              Client's Email
+            </FieldLabel>
+            {errors.clientEmail && (
+              <ErrorMessage>{errors.clientEmail.message}</ErrorMessage>
+            )}
+          </LabelRow>
+          <Input
+            type="email"
+            placeholder="e.g. email@example.com"
+            {...register("clientEmail")}
+            $hasError={!!errors.clientEmail}
           />
         </FieldGroup>
+
         <FieldGroup>
-          <FieldLabel>Client's Email</FieldLabel>
-          <Input 
-            type="email" 
-            placeholder="e.g. email@example.com" 
-            name="clientEmail" 
-            value={formData.clientEmail || ""} 
-            onChange={handleInputChange} 
+          <LabelRow>
+            <FieldLabel $hasError={!!errors.clientAddress?.street}>
+              Street Address
+            </FieldLabel>
+            {errors.clientAddress?.street && (
+              <ErrorMessage>{errors.clientAddress.street.message}</ErrorMessage>
+            )}
+          </LabelRow>
+          <Input
+            {...register("clientAddress.street")}
+            $hasError={!!errors.clientAddress?.street}
           />
         </FieldGroup>
-        <FieldGroup>
-          <FieldLabel>Street Address</FieldLabel>
-          <Input 
-            name="clientAddress.street" 
-            value={formData.clientAddress?.street || ""} 
-            onChange={handleInputChange} 
-          />
-        </FieldGroup>
+
         <ThreeCol>
           <FieldGroup>
-            <FieldLabel>City</FieldLabel>
-            <Input 
-              name="clientAddress.city" 
-              value={formData.clientAddress?.city || ""} 
-              onChange={handleInputChange} 
+            <LabelRow>
+              <FieldLabel $hasError={!!errors.clientAddress?.city}>
+                City
+              </FieldLabel>
+              {errors.clientAddress?.city && (
+                <ErrorMessage>{errors.clientAddress.city.message}</ErrorMessage>
+              )}
+            </LabelRow>
+            <Input
+              {...register("clientAddress.city")}
+              $hasError={!!errors.clientAddress?.city}
             />
           </FieldGroup>
+
           <FieldGroup>
-            <FieldLabel>Post Code</FieldLabel>
-            <Input 
-              name="clientAddress.postCode" 
-              value={formData.clientAddress?.postCode || ""} 
-              onChange={handleInputChange} 
+            <LabelRow>
+              <FieldLabel $hasError={!!errors.clientAddress?.postCode}>
+                Post Code
+              </FieldLabel>
+              {errors.clientAddress?.postCode && (
+                <ErrorMessage>
+                  {errors.clientAddress.postCode.message}
+                </ErrorMessage>
+              )}
+            </LabelRow>
+            <Input
+              {...register("clientAddress.postCode")}
+              $hasError={!!errors.clientAddress?.postCode}
             />
           </FieldGroup>
+
           <FieldGroup>
-            <FieldLabel>Country</FieldLabel>
-            <Input 
-              name="clientAddress.country" 
-              value={formData.clientAddress?.country || ""} 
-              onChange={handleInputChange} 
+            <LabelRow>
+              <FieldLabel $hasError={!!errors.clientAddress?.country}>
+                Country
+              </FieldLabel>
+              {errors.clientAddress?.country && (
+                <ErrorMessage>
+                  {errors.clientAddress.country.message}
+                </ErrorMessage>
+              )}
+            </LabelRow>
+            <Input
+              {...register("clientAddress.country")}
+              $hasError={!!errors.clientAddress?.country}
             />
           </FieldGroup>
         </ThreeCol>
       </Section>
 
-      {/* Meta Dates & Info Section */}
       <Section>
         <TwoCol>
           <CustomDatePicker
-            selectedDate={formData.createdAt} 
-            onSelectDate={(date) => setFormData((prev) => ({ ...prev, createdAt: date }))}
+            selectedDate={createdAt}
+            onSelectDate={(date) => setValue("createdAt", date)}
             show={showDatePicker}
             setShow={setShowDatePicker}
             datePickerRef={datePickerRef}
           />
-          
+
           <FieldGroup ref={dropdownRef}>
             <FieldLabel>Payment Terms</FieldLabel>
             <CustomSelectWrapper>
-              <SelectTrigger 
-                type="button" 
+              <SelectTrigger
+                type="button"
                 $isOpen={showDropdown}
                 onClick={() => setShowDropdown(!showDropdown)}
               >
                 <span>{currentTermLabel}</span>
-                <svg width="11" height="7" viewBox="0 0 11 7" fill="none" className="arrow-icon">
-                  <path d="M1 1l4.22 4.22L9.44 1" stroke="#7C5DFA" strokeWidth="2" strokeLinecap="round"/>
+                <svg
+                  width="11"
+                  height="7"
+                  viewBox="0 0 11 7"
+                  fill="none"
+                  className="arrow-icon"
+                >
+                  <path
+                    d="M1 1l4.22 4.22L9.44 1"
+                    stroke="#7C5DFA"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
                 </svg>
               </SelectTrigger>
 
               {showDropdown && (
                 <DropdownMenu>
                   {TERMS_OPTIONS.map((option) => (
-                    <DropdownItem 
-                      key={option.value} 
+                    <DropdownItem
+                      key={option.value}
                       type="button"
-                      $isSelected={String(formData.paymentTerms) === option.value}
+                      $isSelected={String(currentTerms) === option.value}
                       onClick={() => handleTermSelect(option.value)}
                     >
                       {option.label}
@@ -181,14 +273,20 @@ export default function FormFields({
             </CustomSelectWrapper>
           </FieldGroup>
         </TwoCol>
-        
+
         <FieldGroup>
-          <FieldLabel>Project Description</FieldLabel>
-          <Input 
-            placeholder="e.g. Graphic Design Services" 
-            name="description" 
-            value={formData.description || ""} 
-            onChange={handleInputChange} 
+          <LabelRow>
+            <FieldLabel $hasError={!!errors.description}>
+              Project Description
+            </FieldLabel>
+            {errors.description && (
+              <ErrorMessage>{errors.description.message}</ErrorMessage>
+            )}
+          </LabelRow>
+          <Input
+            placeholder="e.g. Graphic Design Services"
+            {...register("description")}
+            $hasError={!!errors.description}
           />
         </FieldGroup>
       </Section>
@@ -196,21 +294,16 @@ export default function FormFields({
   );
 }
 
-// --- Styled Components ---
-
 const Section = styled.div`
   margin-bottom: 40px;
 `;
-
 const SectionLabel = styled.h4`
   font-size: 12px;
   font-weight: 700;
   color: #7c5dfa;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
   margin-bottom: 24px;
 `;
-
 const FieldGroup = styled.div`
   position: relative;
   display: flex;
@@ -218,70 +311,66 @@ const FieldGroup = styled.div`
   gap: 10px;
   margin-bottom: 24px;
 `;
-
+const LabelRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
 const FieldLabel = styled.label`
   font-size: 13px;
   font-weight: 500;
-  color: ${({ theme }) => theme.secondaryText};
-  letter-spacing: -0.1px;
+  color: ${({ $hasError, theme }) =>
+    $hasError ? "#EC5757" : theme.secondaryText};
 `;
-
+const ErrorMessage = styled.span`
+  color: #ec5757;
+  font-size: 10px;
+  font-weight: 600;
+`;
 const Input = styled.input`
   height: 48px;
   border-radius: 4px;
   padding: 0 20px;
   font-size: 15px;
   font-weight: 700;
-  letter-spacing: -0.25px;
   outline: none;
   width: 100%;
-  transition: border-color 0.2s ease;
-  font-family: inherit;
   background-color: ${({ theme }) => theme.inputBg || theme.card};
-  border: 1px solid ${({ theme }) => theme.border};
+  border: 1px solid
+    ${({ $hasError, theme }) => ($hasError ? "#EC5757" : theme.border)};
   color: ${({ theme }) => theme.text};
-
   &:focus {
-    border-color: #7c5dfa;
+    border-color: ${({ $hasError }) => ($hasError ? "#EC5757" : "#7c5dfa")};
   }
 `;
-
-/* --- Custom Pixel-Perfect Dropdown Selection Layouts --- */
-
 const CustomSelectWrapper = styled.div`
   position: relative;
   width: 100%;
 `;
-
 const SelectTrigger = styled.button`
   height: 48px;
   width: 100%;
   background-color: ${({ theme }) => theme.inputBg || theme.card};
-  border: 1px solid ${({ $isOpen, theme }) => ($isOpen ? "#7C5DFA" : theme.border)};
+  border: 1px solid
+    ${({ $isOpen, theme }) => ($isOpen ? "#7C5DFA" : theme.border)};
   border-radius: 4px;
   padding: 0 20px;
   color: ${({ theme }) => theme.text};
   font-size: 15px;
   font-weight: 700;
-  letter-spacing: -0.25px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.2s ease;
-
-  &:hover {
-    border-color: #7C5DFA;
-  }
-
   .arrow-icon {
     transition: transform 0.2s ease;
-    transform: ${({ $isOpen }) => ($isOpen ? "rotate(180deg)" : "rotate(0deg)")};
+    transform: ${({ $isOpen }) =>
+      $isOpen ? "rotate(180deg)" : "rotate(0deg)"};
   }
 `;
-
 const DropdownMenu = styled.div`
   position: absolute;
   top: calc(100% + 8px);
@@ -294,7 +383,6 @@ const DropdownMenu = styled.div`
   z-index: 10;
   overflow: hidden;
 `;
-
 const DropdownItem = styled.button`
   width: 100%;
   height: 48px;
@@ -305,42 +393,29 @@ const DropdownItem = styled.button`
   text-align: left;
   font-size: 15px;
   font-weight: 700;
-  letter-spacing: -0.25px;
   color: ${({ $isSelected, theme }) => ($isSelected ? "#7C5DFA" : theme.text)};
   cursor: pointer;
-  font-family: inherit;
-  transition: color 0.2s ease;
-
   &:last-child {
     border-bottom: none;
   }
-
-  &:hover {
-    color: #7C5DFA;
-  }
 `;
-
 const ThreeCol = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-
   @media (max-width: 600px) {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-
     & > div:last-child {
       grid-column: span 2;
     }
   }
 `;
-
 const TwoCol = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   margin-bottom: 24px;
-
   @media (max-width: 600px) {
     grid-template-columns: 1fr;
     gap: 0;
